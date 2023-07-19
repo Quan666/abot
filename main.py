@@ -13,6 +13,10 @@ async def background_task():
 
 if __name__ == "__main__":
     logger.info("程序启动")
-    asyncio.run(background_task())
-    # start_web()
+    try:
+        asyncio.run(background_task())
+        # start_web()
+    except KeyboardInterrupt:
+        logger.info("程序退出")
+        exit(0)
     

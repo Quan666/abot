@@ -41,7 +41,7 @@ def load_subscription()->List[Subscription]:
         import json
         actions = json.loads(f.read())
         actions = create_actions(actions)
-        logger.info(f"读取到的actions: {actions}")
+        logger.info(f"读取到的 actions: {actions}")
 
     return [Subscription(name="测试",url="https://baidu.com",cron="*/5 * * * * *",spider_name="RssSpider",actions=actions)]
 
