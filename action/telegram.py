@@ -3,7 +3,7 @@
 
 import asyncio
 from typing import List, Optional
-from config import env_config
+from config import ConfigEnv
 from loguru import logger
 from bot import get_bot
 from models import AData, Subscription
@@ -21,11 +21,7 @@ class TelegramActionStaticConfig(BaseActionStaticConfig):
     """
     静态配置
     """
-    class Config:
-        # 设置需要识别的 .env 文件
-        env_file = f".env.{env_config.env}"
-        # 设置字符编码
-        env_file_encoding = 'utf-8'
+    class Config(ConfigEnv):
         # 解析的前缀
         env_prefix = "TELEGRAM_ACTION_"
 

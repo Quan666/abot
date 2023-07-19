@@ -7,7 +7,7 @@
 from typing import List,Optional 
 from pydantic import BaseModel,BaseSettings
 from loguru import logger
-from config import env_config
+from config import ConfigEnv
 from models import AData, Subscription
 
 __ACTION_NAME__ = "BaseAction"
@@ -22,11 +22,7 @@ class BaseActionStaticConfig(BaseSettings):
     """
     log_prefix: Optional[str] = "BaseAction["
 
-    class Config:
-        # 设置需要识别的 .env 文件
-        env_file = f".env.{env_config.env}"
-        # 设置字符编码
-        env_file_encoding = 'utf-8'
+    class Config(ConfigEnv):
         # 解析的前缀
         env_prefix = "BASE_ACTION_"
 
