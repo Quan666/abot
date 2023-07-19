@@ -1,0 +1,22 @@
+[
+    {
+        "name": "BaseAction",
+        "description": "BaseAction",
+        "static_config": {
+            "log_prefix": "BASEACTION: "
+        },
+        "dynamic_config": {}
+    },
+    {
+        "name": "TelegramAction",
+        "description": "向Telegram推送消息",
+        "static_config": {
+            "log_prefix": "TELEGRAMACTION: "
+        },
+        "dynamic_config": {
+            "chat_ids": [
+                1071840459
+            ]
+        }
+    }
+]
