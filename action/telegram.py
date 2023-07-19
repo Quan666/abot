@@ -11,6 +11,12 @@ from .base import BaseAction,BaseActionStaticConfig,BaseActionDynamicConfig
 
 __ACTION_NAME__ = "TelegramAction"
 
+__FUNC_LIST__: Optional[List[str]] = ["get_telegram_message_text"]
+"""
+Action 需要支持的方法列表
+"""
+
+
 class TelegramActionStaticConfig(BaseActionStaticConfig):
     """
     静态配置
@@ -43,6 +49,8 @@ class TelegramAction(BaseAction):
     """
     行为描述
     """
+
+
 
     static_config: Optional[TelegramActionStaticConfig] = TelegramActionStaticConfig()
     """

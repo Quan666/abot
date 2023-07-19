@@ -48,8 +48,7 @@ class AData(BaseModel):
     扩展字段
     """
 
-    def get_telegram_message_text(self)->str:
-        return f"{self.title}\n{self.content}\n{self.url}"
+    
 
 
 class Subscription(BaseModel):

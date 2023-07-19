@@ -2,6 +2,7 @@
 订阅处理
 读取订阅文件，将订阅加入执行队列
 """
+import asyncio
 import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -73,8 +74,12 @@ async def check_subscription(subscription:Subscription,spider:BaseSpider):
     if adatas:
         # todo: 保存数据、去重复
 
+        
+        tasks = []
         for action in subscription.actions:
-            await action.execute(adatas,subscription)
+            if action.name in spider.support_actions:
+                tasks.append(action.execute(adatas,subscription))
+        asyncio.gather(*tasks)
 
 
 def add_job(subscription:Subscription):

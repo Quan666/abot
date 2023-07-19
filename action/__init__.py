@@ -10,22 +10,24 @@ from typing import List
 
 ACTIONS = {}
 
+ACTIONS_FUN_LIST = {}
+
 # 扫描action目录，将所有action存入ACTIONS，key为模块__ACTION_NAME__字段，value为action类
 for file in os.listdir(os.path.dirname(__file__)):
-    if file == "__init__.py" or file[-3:] != ".py":
+    if file == "__init__.py" or not file.endswith(".py"):
         continue
     module_name = file[:-3]
     # 获取模块中所有的类
     module = __import__(f"action.{module_name}", fromlist=[module_name])
     # 加载结尾为Action的类
     for attr in dir(module):
-        if attr[-6:] == "Action":
+        if attr.endswith("Action"):
             action = getattr(module, attr)
             ACTIONS[module.__ACTION_NAME__] = action
+            ACTIONS_FUN_LIST[module.__ACTION_NAME__] = module.__FUNC_LIST__
 
     
 
-print(ACTIONS)
 
 def create_actions(data:List[dict]):
     """

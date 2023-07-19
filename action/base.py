@@ -11,6 +11,10 @@ from config import env_config
 from models import AData, Subscription
 
 __ACTION_NAME__ = "BaseAction"
+__FUNC_LIST__: Optional[List[str]] = []
+"""
+Action 需要支持的方法列表
+"""
 
 class BaseActionStaticConfig(BaseSettings):
     """
@@ -47,6 +51,7 @@ class BaseAction(BaseModel):
     """
     行为描述
     """
+
 
     static_config: Optional[BaseActionStaticConfig] = BaseActionStaticConfig()
     """

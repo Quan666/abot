@@ -10,7 +10,7 @@ from utils.request import get,Response
 
 
 
-class BaseSpiderAData(AData):
+class RssSpiderAData(AData):
     """
     爬虫数据模型 基类, 所有爬虫数据模型都可以继承此类或者直接继承AData
     """
@@ -22,12 +22,12 @@ class BaseSpiderAData(AData):
 
 
 
-class BaseSpider(BaseModel):
+class RssSpider(BaseModel):
     """
     爬虫模型
     """
 
-    name: str= "BaseSpider"
+    name: str= "RssSpider"
     """
     爬虫名称
     """
@@ -38,7 +38,7 @@ class BaseSpider(BaseModel):
     """
 
 
-    prefix: str = "BaseSpider"
+    prefix: str = "RssSpider"
     """
     唯一id 前缀
     """
@@ -62,13 +62,13 @@ class BaseSpider(BaseModel):
         """
         return await get(subscription.url)
     
-    async def parse(self,subscription:Subscription,response:Response) -> Optional[List[BaseSpiderAData]]:
+    async def parse(self,subscription:Subscription,response:Response) -> Optional[List[RssSpiderAData]]:
         """
         解析数据
         """
-        return [BaseSpiderAData(id=self.get_only_id(get_timestamp()),title=subscription.name,content=f"{response.content[:100]}...",url=subscription.url,source=subscription.name,push_time=get_timestamp(),extend={})]
+        return [RssSpiderAData(id=self.get_only_id(get_timestamp()),title=subscription.name,content=f"{response.content[:100]}...",url=subscription.url,source=subscription.name,push_time=get_timestamp(),extend={})]
     
-    async def start(self,subscription:Subscription) -> Optional[List[BaseSpiderAData]]:
+    async def start(self,subscription:Subscription) -> Optional[List[RssSpiderAData]]:
         """
         开始爬取
         """
