@@ -15,7 +15,7 @@ from action import create_actions
 from models import Subscription
 from spider import get_spider
 from spider.routes.base import BaseSpider
-
+from config import config
 # debug输出
 scheduler = AsyncIOScheduler()
 
@@ -28,7 +28,7 @@ def load_subscription()->List[Subscription]:
     # todo: 读取订阅文件, Action配置怎么根据json转换成对应的类？
     # 下面都是测试代码
     t = TelegramAction()
-    t.dynamic_config.chat_ids = [1071840459]
+    t.dynamic_config.chat_ids = config.telegram_admin_ids
 
     actions=[BaseAction(),t]
     # 写入json

@@ -154,3 +154,4 @@ data/
 bot.session
 bot.session-journal
 logs/
+actions.json
