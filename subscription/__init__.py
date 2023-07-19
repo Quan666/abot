@@ -43,7 +43,7 @@ def load_subscription()->List[Subscription]:
         actions = create_actions(actions)
         logger.info(f"读取到的actions: {actions}")
 
-    return [Subscription(name="测试",url="https://baidu.com",cron="*/5 * * * * *",actions=actions)]
+    return [Subscription(name="测试",url="https://baidu.com",cron="*/5 * * * * *",spider_name="RssSpider",actions=actions)]
 
 
 def create_trigger(subscription:Subscription)->Optional[CronTrigger]:
@@ -88,6 +88,7 @@ def add_job(subscription:Subscription):
     """
     spider = get_spider(subscription)
     if spider is None:
+        logger.error(f"未找到对应的Spider: {subscription.spider_name}")
         return
     # 通过 cron 表达式添加任务
     trigger = create_trigger(subscription)

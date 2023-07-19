@@ -22,7 +22,7 @@ def register_spider(spider_cls):
 
 def get_spider(subscription:Subscription)->Optional[BaseSpider]:
     for spider in SPIDES:
-        if re.match(spider.url_pattern, subscription.url):
+        if subscription.spider_name == spider.name:
             return spider
     return None
 

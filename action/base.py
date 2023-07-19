@@ -43,7 +43,7 @@ class BaseAction(BaseModel):
     行为名称
     """
 
-    description: Optional[str] = "BaseAction"
+    description: Optional[str] = "基础Action"
     """
     行为描述
     """

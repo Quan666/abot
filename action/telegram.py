@@ -41,7 +41,7 @@ class TelegramAction(BaseAction):
     行为名称
     """
 
-    description: Optional[str] = "向Telegram推送消息"
+    description: Optional[str] = "向 Telegram 推送消息"
     """
     行为描述
     """

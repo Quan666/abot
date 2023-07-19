@@ -1,5 +1,5 @@
 """
-爬虫部分
+Spider 部分
 """
 from typing import Callable, Optional, List
 import arrow
@@ -12,7 +12,7 @@ from utils.request import get,Response
 
 class BaseSpiderAData(AData):
     """
-    爬虫数据模型 基类, 所有爬虫数据模型都可以继承此类或者直接继承AData
+    Spider 数据模型 基类, 所有 Spider 数据模型都可以继承此类或者直接继承AData
     """
     def get_telegram_message_text(self)->str:
         """
@@ -24,12 +24,12 @@ class BaseSpiderAData(AData):
 
 class BaseSpider(BaseModel):
     """
-    爬虫模型
+    Spider 模型
     """
 
     name: str= "BaseSpider"
     """
-    爬虫名称
+    Spider 名称
     """
 
     url_pattern: str = ".*?"
@@ -70,7 +70,7 @@ class BaseSpider(BaseModel):
     
     async def start(self,subscription:Subscription) -> Optional[List[BaseSpiderAData]]:
         """
-        开始爬取
+        开始流程
         """
         response = await self.request(subscription)
         if response:

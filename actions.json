@@ -1,7 +1,7 @@
 [
     {
         "name": "BaseAction",
-        "description": "BaseAction",
+        "description": "基础Action",
         "static_config": {
             "log_prefix": "BASEACTION: "
         },
@@ -9,7 +9,7 @@
     },
     {
         "name": "TelegramAction",
-        "description": "向Telegram推送消息",
+        "description": "向 Telegram 推送消息",
         "static_config": {
             "log_prefix": "TELEGRAMACTION: "
         },

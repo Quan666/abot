@@ -14,7 +14,7 @@ class AData(BaseModel):
 
     格式为: {prefix}_{id}
 
-    用于去重复,不同爬虫前缀不同
+    用于去重复,不同Spider前缀不同
 
     """
 
@@ -69,6 +69,11 @@ class Subscription(BaseModel):
     cron : str
     """
     订阅更新时间
+    """
+
+    spider_name: str
+    """
+    Spider 名称
     """
     
     actions: List[Any]
