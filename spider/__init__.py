@@ -11,6 +11,12 @@ from action import ACTIONS_FUN_LIST
 SPIDES = []
 
 def register_spider(spider_cls):
+    # 去重复
+    for spider in SPIDES:
+        if spider_cls.name == spider.name:
+            return
+    
+    logger.debug(f"Spider: {spider_cls.name}, support_actions: {spider_cls.support_actions}")
     SPIDES.append(spider_cls)
 
 
@@ -52,7 +58,6 @@ def load_spider(path, parent_name):
                     # 如果Spider实现了Action的所有方法，则支持该Action
                     if set(action_func_list).issubset(set(func_list)):
                         support_actions.append(action_name)
-                logger.debug(f"Spider: {spider.__name__}, support_actions: {support_actions}")
                 register_spider(spider(support_actions=support_actions))
     
 

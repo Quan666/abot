@@ -5,6 +5,7 @@ from typing import Callable, Optional, List
 import arrow
 from pydantic import BaseModel
 from models import AData, Subscription
+from spider.routes.base import BaseSpider
 from utils import get_timestamp
 from utils.request import get,Response
 
@@ -22,7 +23,7 @@ class RssSpiderAData(AData):
 
 
 
-class RssSpider(BaseModel):
+class RssSpider(BaseSpider):
     """
     爬虫模型
     """
@@ -43,17 +44,6 @@ class RssSpider(BaseModel):
     唯一id 前缀
     """
 
-    support_actions: List[str] = []
-    """
-    支持的Acton, 如果支持对应Acton, 必须实现对应的方法
-    """
-
-
-    def get_only_id(self,id) -> Optional[str]:
-        """
-        获取唯一id,带前缀
-        """
-        return f"{self.prefix}_{id}"
 
     async def request(self,subscription:Subscription) -> Optional[Response]:
         """
@@ -67,6 +57,7 @@ class RssSpider(BaseModel):
         解析数据
         """
         return [RssSpiderAData(id=self.get_only_id(get_timestamp()),title=subscription.name,content=f"{response.content[:100]}...",url=subscription.url,source=subscription.name,push_time=get_timestamp(),extend={})]
+    
     
     async def start(self,subscription:Subscription) -> Optional[List[RssSpiderAData]]:
         """
