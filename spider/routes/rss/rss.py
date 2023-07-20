@@ -33,6 +33,11 @@ class RssSpider(BaseSpider):
     Spider 名称
     """
 
+    description: Optional[str] = "RSS"
+    """
+    描述
+    """
+
     url_pattern: str = ".*?"
     """
     url 匹配正则表达式

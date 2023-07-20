@@ -1,6 +1,6 @@
 
 import re
-from typing import Optional
+from typing import List, Optional
 
 from models import Subscription
 from spider.routes.base import BaseSpider
@@ -26,6 +26,21 @@ def get_spider(subscription:Subscription)->Optional[BaseSpider]:
         if subscription.spider_name == spider.name:
             return spider
     return None
+
+
+def get_spider_support_actions_by_name(name:str)->List[str]:
+    for spider in SPIDES:
+        if name == spider.name:
+            return spider.support_actions
+    return []
+
+# 匹配的spider
+def match_spider(url:str)->Optional[List[BaseSpider]]:
+    result = []
+    for spider in SPIDES:
+        if re.match(spider.url_pattern, url):
+            result.append(spider)
+    return result
 
 # 扫描 routes下所有模块，Spider结尾的类都会被注册
 import importlib

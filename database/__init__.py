@@ -62,6 +62,13 @@ async def load_subscriptions() -> List[Subscription]:
     except Exception:
         return []
 
+async def add_subscription(subscription: Subscription):
+    """
+    添加订阅
+    """
+    subscriptions = await load_subscriptions()
+    subscriptions.append(subscription)
+    await save_subscriptions(subscriptions)
 
 async def save_adatas(adatas: List[AData], subscription: Subscription):
     """

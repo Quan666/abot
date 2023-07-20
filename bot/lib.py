@@ -4,14 +4,29 @@ from typing import Any, List, Optional, Union
 from telethon import Button, TelegramClient, events
 from telethon.tl.types import Message, KeyboardButtonCallback
 
+
 BUTTON_ROW_MAX_LEN = 40
 
+class CancelInput(Exception):
+    """
+    取消输入
+    """
 
 class InputButton:
     def __init__(self, text: str, data: str):
         self.text = text
         self.data = data
 
+CANCEL = "cancel"
+CONFIRM = "confirm"
+
+class InputButtonCancel(InputButton):
+    def __init__(self):
+        super().__init__("取消", "cancel")
+    
+class InputButtonConfirm(InputButton):
+    def __init__(self):
+        super().__init__("确认", "confirm")
 
 async def wait_msg_callback(
     bot: TelegramClient,
@@ -32,7 +47,7 @@ async def wait_msg_callback(
         else:
             # 文字提及用户
             msg += f" [@{event.sender.first_name}](tg://user?id={event.sender_id})"
-
+        
         ans = await conv.send_message(
             msg,
             buttons=Button.force_reply(
@@ -68,7 +83,7 @@ async def wait_msg_callback(
                     await e.delete()
                     await cancel_btn.delete()
                     await ans.delete()
-                    raise asyncio.TimeoutError
+                    raise CancelInput
                 if e.sender_id == event.sender_id:
                     return e
         finally:
@@ -101,6 +116,9 @@ def buttons_layout(btns: List[InputButton], size: int = 3) -> List[List[Button]]
     row: List[KeyboardButtonCallback] = []
     row_len = 0
     for i, btn in enumerate(btns):
+        # 跳过取消、确认按钮，放到最后一行
+        if btn.data in ["cancel", "confirm"]:
+            continue
         if len(row) >= size or row_len + buttons_len[i] > BUTTON_ROW_MAX_LEN and row:
             result.append(row)
             row = []
@@ -109,7 +127,13 @@ def buttons_layout(btns: List[InputButton], size: int = 3) -> List[List[Button]]
         row_len += buttons_len[i]
     if row:
         result.append(row)
-
+    # 确认、取消按钮放到最后一行
+    last_row = []
+    for btn in btns:
+        if btn.data in ["cancel", "confirm"]:
+            last_row.append(Button.inline(btn.text, btn.data))
+    if last_row:
+        result.append(last_row)
     return result
 
 
@@ -140,6 +164,8 @@ async def wait_btn_callback(
                 )
                 # bytes 转字符串
                 data: str = res.data.decode()
+                if data == CANCEL:
+                    raise CancelInput
                 if data in btns_data:
                     return data
         finally:
@@ -211,6 +237,7 @@ class InputText(InputBase):
                 self.tips_text,
                 timeout=timeout,
                 placeholder=placeholder,
+                remove_text=True,
             )
             return str(e.message)
 
@@ -218,6 +245,38 @@ class InputText(InputBase):
             await self.event.answer("超时，已取消")
             return None
 
+class InputTextInt(InputBase):
+    def __init__(
+        self,
+        bot: TelegramClient,
+        event: events.CallbackQuery.Event,
+        tips_text: str,
+    ):
+        super().__init__(bot, event, tips_text)
+
+    async def input(
+        self,
+        placeholder: Optional[str] = None,
+        timeout: float = 60,
+    ) -> Optional[int]:
+        try:
+            while True:
+                e = await wait_msg_callback(
+                    self.bot,
+                    self.event,
+                    self.tips_text,
+                    timeout=timeout,
+                    placeholder=placeholder,
+                    remove_text=True,
+                )
+                try:
+                    return int(e.message)
+                except:
+                    self.tips_text = self.tips_text + ", 请输入正确的整数"
+
+        except asyncio.TimeoutError:
+            await self.event.answer("超时，已取消")
+            return None
 
 class InputBtns(InputBase):
     def __init__(
@@ -331,7 +390,69 @@ class InputListStr(InputBtns):
             if not data or data == f"{self.prefix}cancel":
                 return self.old_list
             elif data == f"{self.prefix}add":
-                in_text = await InputText(self.bot, self.event, "请输入:").input()
+                try:
+                    in_text = await InputText(self.bot, self.event, "请输入").input()
+                except CancelInput:
+                    continue
+                if in_text:
+                    self.__add_item(in_text)
+            elif data.startswith(self.prefix):
+                index = int(data[len(self.prefix) :])
+                confirm = await InputBtnsBool(
+                    self.bot, self.event, f"{self.old_list[index]}\n确认删除?"
+                ).input()
+                if confirm:
+                    self.__del_item(index)
+
+class InputListInt(InputBtns):
+    def __init__(
+        self,
+        bot: TelegramClient,
+        event: events.CallbackQuery.Event,
+        tips_text: str,
+        old_list: List[int],
+    ):
+        self.old_list = old_list
+        self.tips_text = tips_text + "\n当前列表(点击删除):"
+        self.prefix = f"{event.id}_input_btns_old_"
+        self.reflush()
+        super().__init__(
+            bot,
+            event,
+            tips_text,
+            btns=self.btns,
+        )
+
+    def reflush(self) -> None:
+        self.btns = [
+            InputButton(f"{i + 1}. {item}", f"{self.prefix}{i}")
+            for i, item in enumerate(self.old_list)
+        ]
+        self.btns.extend(
+            [
+                InputButton("新增", f"{self.prefix}add"),
+                InputButton("完成", f"{self.prefix}cancel"),
+            ]
+        )
+
+    def __add_item(self, item: int) -> None:
+        self.old_list.append(item)
+        self.reflush()
+
+    def __del_item(self, index: int) -> None:
+        self.old_list.pop(index)
+        self.reflush()
+
+    async def input(self, timeout: float = 60, remove_btn: bool = True) -> List[int]:
+        while True:
+            data = await super().input(timeout=timeout, remove_btn=remove_btn)
+            if not data or data == f"{self.prefix}cancel":
+                return self.old_list
+            elif data == f"{self.prefix}add":
+                try:
+                    in_text = await InputTextInt(self.bot, self.event, "请输入").input()
+                except CancelInput:
+                    continue
                 if in_text:
                     self.__add_item(in_text)
             elif data.startswith(self.prefix):

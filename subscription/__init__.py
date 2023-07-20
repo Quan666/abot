@@ -17,6 +17,7 @@ from models import Subscription
 from spider import get_spider
 from spider.routes.base import BaseSpider
 from config import config
+from utils import create_trigger
 
 # debug输出
 scheduler = AsyncIOScheduler()
@@ -29,23 +30,7 @@ async def load_subscription() -> List[Subscription]:
     return await load_subscriptions()
 
 
-def create_trigger(subscription: Subscription) -> Optional[CronTrigger]:
-    try:
-        times_list = subscription.cron.split(" ")
-        # 制作一个触发器
-        trigger = CronTrigger(
-            second=times_list[0],
-            minute=times_list[1],
-            hour=times_list[2],
-            day=times_list[3],
-            month=times_list[4],
-            day_of_week=times_list[5],
-            timezone="Asia/Shanghai",
-        )
-        return trigger
-    except Exception:
-        logger.exception(f"创建定时器错误, cron:{subscription.cron}")
-        return None
+
 
 
 async def check_subscription(subscription: Subscription, spider: BaseSpider):
@@ -78,8 +63,9 @@ def add_job(subscription: Subscription):
         logger.error(f"未找到对应的Spider: {subscription.spider_name}")
         return
     # 通过 cron 表达式添加任务
-    trigger = create_trigger(subscription)
+    trigger = create_trigger(subscription.cron)
     if trigger is None:
+        logger.error(f"cron表达式错误: {subscription}")
         return
     scheduler.add_job(
         check_subscription,

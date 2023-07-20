@@ -32,6 +32,11 @@ class BaseSpider(BaseModel):
     Spider 名称
     """
 
+    description: Optional[str] = "通用"
+    """
+    描述
+    """
+
     url_pattern: str = ".*?"
     """
     url 匹配正则表达式
