@@ -25,6 +25,11 @@ class Config(BaseSettings):
     # 日志等级
     log_level: str = "INFO"
 
+    # 数据存储位置
+    data_path: str = "data"
+    # 日志存储位置
+    log_path: str = "logs"
+
     # 代理
     proxy: Optional[str] = None
 
@@ -47,7 +52,7 @@ config = Config()
 logger.remove()  # 清除默认的日志处理器
 logger.add(sys.stderr, level=config.log_level)  # 将日志输出到终端，级别为 DEBUG
 logger.add(
-    f"logs/{env_config.env}.log",
+    f"{config.log_path}/{env_config.env}.log",
     level=config.log_level,
     rotation="1 day",
     retention="7 days",

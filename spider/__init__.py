@@ -9,6 +9,7 @@ from loguru import logger
 from action import ACTIONS_FUN_LIST
 
 SPIDES = []
+ADATA_CLASS = {}
 
 def register_spider(spider_cls):
     # 去重复
@@ -30,6 +31,7 @@ def get_spider(subscription:Subscription)->Optional[BaseSpider]:
 import importlib
 import pkgutil
 import spider.routes
+import inspect
 
 def load_spider(path, parent_name):
     for importer, modname, ispkg in pkgutil.iter_modules(path):
@@ -47,6 +49,8 @@ def load_spider(path, parent_name):
             if attr.endswith("AData"):
                 # 获取类的所有方法
                 func_list = [func for func in dir(getattr(module, attr)) if not func.startswith("__")]
+                # 保存类
+                ADATA_CLASS[attr] = getattr(module, attr)
 
         for attr in dir(module):
             if attr.endswith("Spider"):

@@ -12,41 +12,24 @@ from loguru import logger
 from action.base import BaseAction
 from action.telegram import TelegramAction
 from action import create_actions
+from database import load_subscriptions, save_subscriptions,save_adatas,check_adatas
 from models import Subscription
 from spider import get_spider
 from spider.routes.base import BaseSpider
 from config import config
+
 # debug输出
 scheduler = AsyncIOScheduler()
 
 
-def load_subscription()->List[Subscription]:
+async def load_subscription() -> List[Subscription]:
     """
     读取订阅文件，将订阅加入执行队列
     """
-    
-    # todo: 读取订阅文件, Action配置怎么根据json转换成对应的类？
-    # 下面都是测试代码
-    t = TelegramAction()
-    t.dynamic_config.chat_ids = config.telegram_admin_ids
-
-    actions=[BaseAction(),t]
-    # 写入json
-    with open("actions.json","w",encoding="utf-8") as f:
-        import json
-        f.write(json.dumps(actions,default=lambda obj:obj.__dict__,indent=4,ensure_ascii=False))
-    
-    # 读取json
-    with open("actions.json","r",encoding="utf-8") as f:
-        import json
-        actions = json.loads(f.read())
-        actions = create_actions(actions)
-        logger.info(f"读取到的 actions: {actions}")
-
-    return [Subscription(name="测试",url="https://baidu.com",cron="*/5 * * * * *",spider_name="RssSpider",actions=actions)]
+    return await load_subscriptions()
 
 
-def create_trigger(subscription:Subscription)->Optional[CronTrigger]:
+def create_trigger(subscription: Subscription) -> Optional[CronTrigger]:
     try:
         times_list = subscription.cron.split(" ")
         # 制作一个触发器
@@ -65,24 +48,27 @@ def create_trigger(subscription:Subscription)->Optional[CronTrigger]:
         return None
 
 
-async def check_subscription(subscription:Subscription,spider:BaseSpider):
+async def check_subscription(subscription: Subscription, spider: BaseSpider):
     """
     检查订阅是否更新
     """
     logger.info(f"检查订阅: {subscription.name}")
     adatas = await spider.start(subscription)
+    new_adatas = []
     if adatas:
         # todo: 保存数据、去重复
+        new_adatas = await check_adatas(adatas,subscription)
+    if new_adatas:
+        await save_adatas(new_adatas, subscription)
 
-        
         tasks = []
         for action in subscription.actions:
             if action.name in spider.support_actions:
-                tasks.append(action.execute(adatas,subscription))
+                tasks.append(action.execute(new_adatas, subscription))
         asyncio.gather(*tasks)
 
 
-def add_job(subscription:Subscription):
+def add_job(subscription: Subscription):
     """
     添加任务
     """
@@ -94,17 +80,26 @@ def add_job(subscription:Subscription):
     trigger = create_trigger(subscription)
     if trigger is None:
         return
-    scheduler.add_job(check_subscription, trigger=trigger, args=(subscription,spider), id=subscription.name, misfire_grace_time=3,next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=1))
+    scheduler.add_job(
+        check_subscription,
+        trigger=trigger,
+        args=(subscription, spider),
+        id=subscription.name,
+        misfire_grace_time=3,
+        next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=1),
+    )
     logger.info(f"定时任务添加成功: {subscription.name}")
 
-def add_jobs(subscriptions:List[Subscription]):
+
+def add_jobs(subscriptions: List[Subscription]):
     """
     添加任务
     """
     for subscription in subscriptions:
         add_job(subscription)
 
-def remove_job(subscription:Subscription):
+
+def remove_job(subscription: Subscription):
     """
     移除任务
     """
@@ -113,7 +108,7 @@ def remove_job(subscription:Subscription):
 
 async def start_subscription():
     scheduler.start()
-    subs = load_subscription()
+    subs = await load_subscription()
     add_jobs(subs)
     logger.info(f"当前任务数量: {len(scheduler.get_jobs())}")
     # scheduler.print_jobs()

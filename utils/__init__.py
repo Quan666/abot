@@ -1,7 +1,7 @@
 import arrow
 
 
-def get_timestamp()->int:
+def get_timestamp() -> int:
     """
     获取当前时间戳, 13 位
     """

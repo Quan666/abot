@@ -86,6 +86,8 @@ class Subscription(BaseModel):
     
     def to_json(self):
         return self.dict()
+    
+    
 
 
 class Response(BaseModel):
