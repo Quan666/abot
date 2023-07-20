@@ -7,26 +7,32 @@ from telethon.tl.types import Message, KeyboardButtonCallback
 
 BUTTON_ROW_MAX_LEN = 40
 
+
 class CancelInput(Exception):
     """
     取消输入
     """
+
 
 class InputButton:
     def __init__(self, text: str, data: str):
         self.text = text
         self.data = data
 
+
 CANCEL = "cancel"
 CONFIRM = "confirm"
+
 
 class InputButtonCancel(InputButton):
     def __init__(self):
         super().__init__("取消", "cancel")
-    
+
+
 class InputButtonConfirm(InputButton):
     def __init__(self):
         super().__init__("确认", "confirm")
+
 
 async def wait_msg_callback(
     bot: TelegramClient,
@@ -47,7 +53,7 @@ async def wait_msg_callback(
         else:
             # 文字提及用户
             msg += f" [@{event.sender.first_name}](tg://user?id={event.sender_id})"
-        
+
         ans = await conv.send_message(
             msg,
             buttons=Button.force_reply(
@@ -245,6 +251,7 @@ class InputText(InputBase):
             await self.event.answer("超时，已取消")
             return None
 
+
 class InputTextInt(InputBase):
     def __init__(
         self,
@@ -278,6 +285,7 @@ class InputTextInt(InputBase):
             await self.event.answer("超时，已取消")
             return None
 
+
 class InputBtns(InputBase):
     def __init__(
         self,
@@ -292,19 +300,14 @@ class InputBtns(InputBase):
     async def input(
         self, timeout: float = 60, remove_btn: bool = True
     ) -> Union[Optional[str], Any]:
-
-        try:
-            return await wait_btn_callback(
-                self.bot,
-                self.event,
-                tips_text=self.tips_text,
-                btns=self.btns,
-                remove_btn=remove_btn,
-                timeout=timeout,
-            )
-        except asyncio.TimeoutError:
-            await self.event.answer("超时，已取消")
-            return None
+        return await wait_btn_callback(
+            self.bot,
+            self.event,
+            tips_text=self.tips_text,
+            btns=self.btns,
+            remove_btn=remove_btn,
+            timeout=timeout,
+        )
 
 
 class InputBtnsBool(InputBtns):
@@ -403,6 +406,7 @@ class InputListStr(InputBtns):
                 ).input()
                 if confirm:
                     self.__del_item(index)
+
 
 class InputListInt(InputBtns):
     def __init__(

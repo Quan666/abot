@@ -1,9 +1,15 @@
 import asyncio
 from telethon import TelegramClient, events, sync, Button
 from bot import bot
-from bot.inputs import choose_actions, choose_spider, cron_input, subscription_name_input
+from bot.inputs import (
+    choose_actions,
+    choose_spider,
+    cron_input,
+    subscription_name_input,
+)
 from bot.lib import CancelInput, CommandInfo, InputText, buttons_layout
 from bot.permission import handle_permission
+from bot.query import query_list
 from config import config
 from database import add_subscription
 from models import Subscription
@@ -32,7 +38,7 @@ async def start(event: events.NewMessage.Event) -> None:
 
 
 @bot.on(events.CallbackQuery(data=StratCommands.subscribe.command, func=lambda e: handle_permission(e)))  # type: ignore
-async def change(event: events.CallbackQuery.Event) -> None:
+async def subscribe(event: events.CallbackQuery.Event) -> None:
     await event.delete()
     try:
 
@@ -63,3 +69,22 @@ async def change(event: events.CallbackQuery.Event) -> None:
         pass
     except Exception as e:
         print(e)
+
+
+@bot.on(events.CallbackQuery(data=StratCommands.change.command, func=lambda e: handle_permission(e)))  # type: ignore
+async def change(event: events.CallbackQuery.Event) -> None:
+    pass
+
+
+@bot.on(events.CallbackQuery(data=StratCommands.query.command, func=lambda e: handle_permission(e)))  # type: ignore
+async def query(event: events.CallbackQuery.Event) -> None:
+    """
+    查询订阅
+    """
+    await event.delete()
+    try:
+        await query_list(bot, event)
+    except asyncio.TimeoutError:
+        pass
+    except CancelInput:
+        pass
