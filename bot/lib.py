@@ -415,10 +415,12 @@ class InputListInt(InputBtns):
         event: events.CallbackQuery.Event,
         tips_text: str,
         old_list: List[int],
+        unique: bool = True,
     ):
         self.old_list = old_list
         self.tips_text = tips_text + "\n当前列表(点击删除):"
         self.prefix = f"{event.id}_input_btns_old_"
+        self.unique = unique
         self.reflush()
         super().__init__(
             bot,
@@ -440,6 +442,8 @@ class InputListInt(InputBtns):
         )
 
     def __add_item(self, item: int) -> None:
+        if item in self.old_list and self.unique:
+            return
         self.old_list.append(item)
         self.reflush()
 

@@ -61,7 +61,6 @@ async def cron_input(
 async def action_config_input(
     bot: TelegramClient,
     event: events.CallbackQuery.Event,
-    action_name: str,
     action: BaseAction,
 ) -> BaseActionDynamicConfig:
     """
@@ -103,11 +102,20 @@ async def choose_actions(
         # 如果取消
         if CONFIRM == result:
             break
-        if result and result not in actions_select:
-            config = await action_config_input(bot, event, result, actions[result])
-            actions[result].dynamic_config = config
-            actions_select.append(actions[result])
-            actions_name.append(actions[result].description)
+        if result and result:
+            # 如果选择了
+            action_ = actions[result]
+            exist = False
+            for action in actions_select:
+                if action.name == action_.name:
+                    action_ = action
+                    exist = True
+
+            config = await action_config_input(bot, event, action_)
+            action_.dynamic_config = config
+            if not exist:
+                actions_select.append(actions[result])
+                actions_name.append(actions[result].description)
 
     return actions_select
 
