@@ -83,6 +83,11 @@ class Subscription(BaseModel):
     会触发哪些动作，比如: telegram, webhook
     对应的动作动态配置
     """
+
+    enable: bool = True
+    """
+    是否启用订阅
+    """
     
     def to_json(self):
         return self.dict()

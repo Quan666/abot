@@ -59,7 +59,7 @@ async def check_subscription(subscription: Subscription, spider: BaseSpider):
         # todo: 保存数据、去重复
         new_adatas = await check_adatas(adatas,subscription)
     if new_adatas:
-        await save_adatas(new_adatas, subscription)
+        
 
         tasks = []
         for action in subscription.actions:
@@ -67,6 +67,7 @@ async def check_subscription(subscription: Subscription, spider: BaseSpider):
                 tasks.append(action.execute(new_adatas, subscription))
         asyncio.gather(*tasks)
 
+        await save_adatas(new_adatas, subscription)
 
 def add_job(subscription: Subscription):
     """
@@ -96,7 +97,8 @@ def add_jobs(subscriptions: List[Subscription]):
     添加任务
     """
     for subscription in subscriptions:
-        add_job(subscription)
+        if subscription.enable:
+            add_job(subscription)
 
 
 def remove_job(subscription: Subscription):

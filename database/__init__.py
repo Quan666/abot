@@ -70,16 +70,16 @@ async def save_adatas(adatas: List[AData], subscription: Subscription):
     # 读取数据
     old_adatas = await load_adatas(subscription)
     # 合并数据
-    adatas.extend(old_adatas)
+    old_adatas.extend(adatas)
     # 去重复
-    adatas = list({adata.id: adata for adata in adatas}.values())
+    old_adatas = list({adata.id: adata for adata in old_adatas}.values())
 
     async with aiofiles.open(
         f"{config.data_path}/{subscription.name}.json", "w", encoding="utf-8"
     ) as f:
         # 写入的时候，将对象转换为dict，并将对象类型写入 __type__ 字段
         json_data = []
-        for adata in adatas:
+        for adata in old_adatas:
             adata_dict = adata.__dict__
             adata_dict["__type__"] = adata.__class__.__name__
             json_data.append(adata_dict)

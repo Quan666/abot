@@ -151,7 +151,7 @@ async def wait_btn_callback(
 from abc import ABCMeta, abstractmethod
 
 
-class CommandInputBase(metaclass=ABCMeta):
+class InputBase(metaclass=ABCMeta):
     def __init__(
         self,
         bot: TelegramClient,
@@ -190,7 +190,7 @@ class CommandField:
         self.value = value
 
 
-class CommandInputText(CommandInputBase):
+class InputText(InputBase):
     def __init__(
         self,
         bot: TelegramClient,
@@ -219,7 +219,7 @@ class CommandInputText(CommandInputBase):
             return None
 
 
-class CommandInputBtns(CommandInputBase):
+class InputBtns(InputBase):
     def __init__(
         self,
         bot: TelegramClient,
@@ -248,7 +248,7 @@ class CommandInputBtns(CommandInputBase):
             return None
 
 
-class CommandInputBtnsBool(CommandInputBtns):
+class InputBtnsBool(InputBtns):
     def __init__(
         self,
         bot: TelegramClient,
@@ -268,7 +268,7 @@ class CommandInputBtnsBool(CommandInputBtns):
         return (await super().input(timeout=timeout, remove_btn=remove_btn)) == "True"
 
 
-class CommandInputBtnsCancel(CommandInputBtns):
+class InputBtnsCancel(InputBtns):
     def __init__(
         self,
         bot: TelegramClient,
@@ -286,7 +286,7 @@ class CommandInputBtnsCancel(CommandInputBtns):
         return (await super().input(timeout=timeout, remove_btn=remove_btn)) == "cancel"
 
 
-class CommandInputListStr(CommandInputBtns):
+class InputListStr(InputBtns):
     def __init__(
         self,
         bot: TelegramClient,
@@ -331,12 +331,12 @@ class CommandInputListStr(CommandInputBtns):
             if not data or data == f"{self.prefix}cancel":
                 return self.old_list
             elif data == f"{self.prefix}add":
-                in_text = await CommandInputText(self.bot, self.event, "请输入:").input()
+                in_text = await InputText(self.bot, self.event, "请输入:").input()
                 if in_text:
                     self.__add_item(in_text)
             elif data.startswith(self.prefix):
                 index = int(data[len(self.prefix) :])
-                confirm = await CommandInputBtnsBool(
+                confirm = await InputBtnsBool(
                     self.bot, self.event, f"{self.old_list[index]}\n确认删除?"
                 ).input()
                 if confirm:
