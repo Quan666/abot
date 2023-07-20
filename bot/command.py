@@ -1,4 +1,5 @@
 import asyncio
+from loguru import logger
 from telethon import TelegramClient, events, sync, Button
 from bot import bot
 from bot.inputs import (
@@ -42,8 +43,8 @@ async def subscribe(event: events.CallbackQuery.Event) -> None:
     await event.delete()
     try:
 
-        sub_name = await subscription_name_input(bot, event, "订阅名称")
-        sub_url = await InputText(bot, event, "订阅地址").input()
+        sub_name = await subscription_name_input(bot, event, "名称")
+        sub_url = await InputText(bot, event, "URL").input()
         sub_cron = await cron_input(bot, event)
 
         spider_name = await choose_spider(bot, event, "选择抓取方式", sub_url)
@@ -68,7 +69,7 @@ async def subscribe(event: events.CallbackQuery.Event) -> None:
     except CancelInput as e:
         pass
     except Exception as e:
-        print(e)
+        logger.error(e)
 
 
 @bot.on(events.CallbackQuery(data=StratCommands.change.command, func=lambda e: handle_permission(e)))  # type: ignore

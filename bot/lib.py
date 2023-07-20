@@ -77,14 +77,14 @@ async def wait_msg_callback(
                     ),
                 ]
                 done, pending = await asyncio.wait(
-                    wait_event, return_when=asyncio.FIRST_COMPLETED
+                    wait_event, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
                 )
                 for task in pending:
                     task.cancel()
                 e = done.pop().result()
                 if (
                     isinstance(e, events.CallbackQuery.Event)
-                    and e.data.decode() == "cancel"
+                    and e.data.decode() == CANCEL
                 ):
                     await e.delete()
                     await cancel_btn.delete()
@@ -236,20 +236,15 @@ class InputText(InputBase):
         placeholder: Optional[str] = None,
         timeout: float = 60,
     ) -> Optional[str]:
-        try:
-            e = await wait_msg_callback(
-                self.bot,
-                self.event,
-                self.tips_text,
-                timeout=timeout,
-                placeholder=placeholder,
-                remove_text=True,
-            )
-            return str(e.message)
-
-        except asyncio.TimeoutError:
-            await self.event.answer("超时，已取消")
-            return None
+        e = await wait_msg_callback(
+            self.bot,
+            self.event,
+            self.tips_text,
+            timeout=timeout,
+            placeholder=placeholder,
+            remove_text=True,
+        )
+        return str(e.message)
 
 
 class InputTextInt(InputBase):
@@ -266,24 +261,19 @@ class InputTextInt(InputBase):
         placeholder: Optional[str] = None,
         timeout: float = 60,
     ) -> Optional[int]:
-        try:
-            while True:
-                e = await wait_msg_callback(
-                    self.bot,
-                    self.event,
-                    self.tips_text,
-                    timeout=timeout,
-                    placeholder=placeholder,
-                    remove_text=True,
-                )
-                try:
-                    return int(e.message)
-                except:
-                    self.tips_text = self.tips_text + ", 请输入正确的整数"
-
-        except asyncio.TimeoutError:
-            await self.event.answer("超时，已取消")
-            return None
+        while True:
+            e = await wait_msg_callback(
+                self.bot,
+                self.event,
+                self.tips_text,
+                timeout=timeout,
+                placeholder=placeholder,
+                remove_text=True,
+            )
+            try:
+                return int(e.message)
+            except:
+                self.tips_text = self.tips_text + ", 请输入正确的整数"
 
 
 class InputBtns(InputBase):
