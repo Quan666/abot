@@ -157,3 +157,4 @@ logs/
 actions.json
 dev.txt
 log.txt
+pm2_abot.json

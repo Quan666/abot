@@ -44,7 +44,7 @@ def get_spider_support_actions_by_name(name: str) -> List[str]:
 def match_spider(url: str) -> Optional[List[BaseSpider]]:
     result = []
     for spider in SPIDES:
-        if re.match(spider.url_pattern, url):
+        if re.search(spider.url_pattern, url):
             result.append(spider)
     return result
 
