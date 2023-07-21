@@ -5,11 +5,11 @@
 from typing import Any, Literal, Optional, Tuple
 
 from loguru import logger
-from telethon import TelegramClient, events, sync, Button
+from telethon import TelegramClient
 
 from config import config
 
-proxy = Optional[Tuple[Literal["http"], str, int]]
+proxy: Optional[Tuple[Literal["http"], str, int]] = None
 
 if config.proxy:
     proxy = (
