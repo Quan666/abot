@@ -85,4 +85,4 @@ class BaseAction(BaseModel):
         """
         执行
         """
-        logger.info(f"{self.static_config.log_prefix}{self.name}执行")
+        logger.info(f"{self.static_config.log_prefix}{self.name} 执行")

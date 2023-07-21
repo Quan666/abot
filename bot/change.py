@@ -48,6 +48,9 @@ async def change_filed(
             InputButton("停止", data="enable")
             if sub.enable
             else InputButton("启用", data="enable"),
+            InputButton("不使用代理", data="enable_proxy")
+            if sub.enable_proxy
+            else InputButton("开启代理", data="enable_proxy"),
             InputButtonCancel(),
             InputButtonConfirm(),
         ]
@@ -79,6 +82,8 @@ async def change_filed(
                 )
             elif btn == "enable":
                 sub.enable = not sub.enable
+            elif btn == "enable_proxy":
+                sub.enable_proxy = not sub.enable_proxy
 
             elif btn == CONFIRM:
                 await update_subscription(old_sub, sub)

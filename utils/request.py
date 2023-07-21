@@ -9,7 +9,7 @@ def proxy2httpx(proxy: str) -> dict:
         return {}
     return {
         "http://": f"http://{proxy}",
-        "https://": f"https://{proxy}",
+        "https://": f"http://{proxy}",
     }
 
 async def get(url, params=None, headers=None, cookies=None, timeout=10,proxy=None)->Response:
@@ -24,6 +24,11 @@ async def get(url, params=None, headers=None, cookies=None, timeout=10,proxy=Non
                 content=resp.text,
                 headers=resp.headers,
             )
+        except httpx.ConnectError as e:
+            if str(e) == "":
+                e = "超时"
+            raise Exception(f"{url} 连接失败: {e}")
+        
         except Exception as e:
             raise Exception(f"{url} 请求失败: {e}")
 

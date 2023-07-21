@@ -54,6 +54,9 @@ async def check_adatas(adatas: List[AData], subscription: Subscription) -> List[
     # 读取数据
     old_adatas = await load_adatas(subscription)
     old_id_set = set([old_adata.id for old_adata in old_adatas])
+    if not old_id_set:
+        await save_adatas(adatas, subscription)
+        return []
     # 去重复
     new_adatas = []
     for adata in adatas:

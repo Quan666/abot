@@ -87,6 +87,11 @@ class Subscription(BaseModel):
     """
     是否启用订阅
     """
+
+    enable_proxy: bool = False
+    """
+    是否启用代理
+    """
     
     def to_json(self):
         return self.dict()

@@ -10,7 +10,10 @@ from telethon import TelegramClient, events
 
 __ACTION_NAME__ = "TelegramAction"
 
-__FUNC_LIST__: Optional[List[str]] = ["get_telegram_message_text"]
+__FUNC_LIST__: Optional[List[str]] = [
+    "get_telegram_message_text",
+    "get_telegram_message_config",
+]
 """
 Action 需要支持的方法列表
 """
@@ -42,7 +45,10 @@ class TelegramActionDynamicConfig(BaseActionDynamicConfig):
         动态配置, Telegram 交互设置
         """
         self.chat_ids = await InputListInt(
-            bot, event, f"当前 Chat ID: `{event.chat_id}`\n输入需要推送的 Chat ID: ", self.chat_ids
+            bot,
+            event,
+            f"当前 Chat ID: `{event.chat_id}`\n输入需要推送的 Chat ID: ",
+            self.chat_ids,
         ).input()
 
 
@@ -80,7 +86,11 @@ class TelegramAction(BaseAction):
         tasks = []
         for chat_id in self.dynamic_config.chat_ids:
             for adata in data:
+
+                telegram_config = await adata.get_telegram_message_config()
                 tasks.append(
-                    get_bot().send_message(chat_id, adata.get_telegram_message_text())
+                    get_bot().send_message(
+                        chat_id, await adata.get_telegram_message_text(), **telegram_config
+                    )
                 )
         await asyncio.gather(*tasks)
