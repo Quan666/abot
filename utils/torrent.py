@@ -1,4 +1,3 @@
-
 import base64
 from typing import Optional
 
@@ -7,7 +6,7 @@ import httpx
 from utils.request import proxy2httpx
 
 
-async def download_torrent(url:str, proxy:Optional[str]=None)->Optional[bytes]:
+async def download_torrent(url: str, proxy: Optional[str] = None) -> Optional[bytes]:
     """
     下载torrent文件
     """
@@ -17,7 +16,6 @@ async def download_torrent(url:str, proxy:Optional[str]=None)->Optional[bytes]:
             return resp.content
         except Exception as e:
             raise Exception(f"{url} 下载失败: {e}")
-        
 
 
 def get_torrent_b16_hash(content: bytes) -> str:
@@ -39,5 +37,6 @@ def get_torrent_b16_hash(content: bytes) -> str:
 
 def torrent_file2magnet_url(content: bytes) -> str:
     import magneturi
+
     manget_link = magneturi.from_torrent_data(content)
     return manget_link

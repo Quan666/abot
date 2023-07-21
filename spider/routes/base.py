@@ -10,6 +10,7 @@ from utils.request import get, Response
 from config import config
 from loguru import logger
 
+
 class BaseSpiderAData(AData):
     """
     Spider 数据模型 基类, 所有 Spider 数据模型都可以继承此类或者直接继承AData
@@ -32,6 +33,7 @@ class BaseSpiderAData(AData):
         return {
             "parse_mode": "html",
         }
+
 
 class BaseSpider(BaseModel):
     """

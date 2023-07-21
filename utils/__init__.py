@@ -4,11 +4,13 @@ import arrow
 from apscheduler.triggers.cron import CronTrigger
 from loguru import logger
 
+
 def get_timestamp() -> int:
     """
     获取当前时间戳, 13 位
     """
     return int(arrow.now().float_timestamp * 1000)
+
 
 def timestamp2human(timestamp: int) -> str:
     """
@@ -17,7 +19,7 @@ def timestamp2human(timestamp: int) -> str:
     return arrow.get(timestamp).to("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")
 
 
-def create_trigger(cron:str) -> Optional[CronTrigger]:
+def create_trigger(cron: str) -> Optional[CronTrigger]:
     try:
         times_list = cron.split(" ")
         # 制作一个触发器
@@ -33,7 +35,7 @@ def create_trigger(cron:str) -> Optional[CronTrigger]:
         return trigger
     except Exception:
         return None
-    
+
 
 def convert_size(size_bytes: int) -> str:
     if size_bytes == 0:

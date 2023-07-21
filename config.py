@@ -1,24 +1,28 @@
 import sys
 from pydantic import BaseSettings
-from typing import Optional,List
+from typing import Optional, List
 from loguru import logger
-
 
 
 class EnvConfig(BaseSettings):
     env: str = "dev"
-    class Config():
+
+    class Config:
         # 设置需要识别的 .env 文件 判断当前环境
         env_file = ".env"
         # 设置字符编码
-        env_file_encoding = 'utf-8'
+        env_file_encoding = "utf-8"
+
+
 env_config = EnvConfig()
 
-class ConfigEnv():
+
+class ConfigEnv:
     # 设置需要识别的 .env 文件 判断当前环境
     env_file = f".env.{env_config.env}"
     # 设置字符编码
-    env_file_encoding = 'utf-8'
+    env_file_encoding = "utf-8"
+
 
 class Config(BaseSettings):
 
@@ -45,7 +49,8 @@ class Config(BaseSettings):
         # 设置需要识别的 .env 文件 判断当前环境
         env_file = f".env.{env_config.env}"
         # 设置字符编码
-        env_file_encoding = 'utf-8'
+        env_file_encoding = "utf-8"
+
 
 config = Config()
 # 配置日志等级

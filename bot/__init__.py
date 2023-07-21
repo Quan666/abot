@@ -18,7 +18,8 @@ if config.proxy:
         int(config.proxy.split(":")[1]),
     )
 
-bot:Optional[TelegramClient] = None
+bot: Optional[TelegramClient] = None
+
 
 def get_bot() -> TelegramClient:
     """
@@ -27,6 +28,7 @@ def get_bot() -> TelegramClient:
     if not bot:
         raise Exception("bot 未初始化")
     return bot
+
 
 async def start_telegram_bot(loop: Any, boot_message: str) -> None:
     if not (
@@ -45,6 +47,7 @@ async def start_telegram_bot(loop: Any, boot_message: str) -> None:
         loop=loop,
     )
     from . import command
+
     logger.success("Telegram Bot 初始化成功")
     await bot.start(bot_token=config.telegram_bot_token)
     if config.telegram_admin_ids:

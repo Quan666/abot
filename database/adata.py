@@ -5,6 +5,7 @@ import json
 import aiofiles
 from spider import ADATA_CLASS
 
+
 async def save_adatas(adatas: List[AData], subscription: Subscription):
     """
     保存数据, 暂时存json

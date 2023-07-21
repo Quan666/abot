@@ -33,7 +33,7 @@ class RssSpiderAData(BaseSpiderAData):
         text += f"{self.content}\n\n"
         text += f"<a href='{self.url}'>阅读原文</a>"
         return text
-    
+
     async def get_telegram_message_config(self) -> str:
         """
         TelegramAction 的方法, 发送消息时的配置
@@ -41,6 +41,7 @@ class RssSpiderAData(BaseSpiderAData):
         return {
             "parse_mode": "html",
         }
+
 
 class RssSpider(BaseSpider):
     """

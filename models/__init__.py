@@ -47,8 +47,6 @@ class AData(BaseModel):
     扩展字段
     """
 
-    
-
 
 class Subscription(BaseModel):
     """
@@ -60,12 +58,12 @@ class Subscription(BaseModel):
     订阅名称
     """
 
-    url : str
+    url: str
     """
     订阅链接
     """
 
-    cron : str
+    cron: str
     """
     订阅更新时间
     """
@@ -74,7 +72,7 @@ class Subscription(BaseModel):
     """
     Spider 名称
     """
-    
+
     actions: List[Any]
     """
     订阅Acton
@@ -92,15 +90,9 @@ class Subscription(BaseModel):
     """
     是否启用代理
     """
-    
+
     def to_json(self):
         return self.dict()
-    
-
-
-
-
-
 
 
 class Response(BaseModel):
@@ -122,8 +114,6 @@ class Response(BaseModel):
     """
     响应头
     """
-
-
 
     def is_success(self) -> bool:
         """

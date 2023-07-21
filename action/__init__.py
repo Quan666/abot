@@ -26,10 +26,8 @@ for file in os.listdir(os.path.dirname(__file__)):
             ACTIONS[module.__ACTION_NAME__] = action
             ACTIONS_FUN_LIST[module.__ACTION_NAME__] = module.__FUNC_LIST__
 
-    
 
-
-def create_actions(data:List[dict]):
+def create_actions(data: List[dict]):
     """
     根据json配置, 创建action实例
     """

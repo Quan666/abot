@@ -90,7 +90,9 @@ class TelegramAction(BaseAction):
                 telegram_config = await adata.get_telegram_message_config()
                 tasks.append(
                     get_bot().send_message(
-                        chat_id, await adata.get_telegram_message_text(), **telegram_config
+                        chat_id,
+                        await adata.get_telegram_message_text(),
+                        **telegram_config,
                     )
                 )
         await asyncio.gather(*tasks)
