@@ -11,11 +11,17 @@ from config import config
 import json
 import aiofiles
 
-# 判断数据存储位置是否存在
+
 import os
 
-from spider import ADATA_CLASS
 
+from subscription.scheduler import (
+    add_sub_async_decorator,
+    update_job_async_decorator,
+    remove_job_async_decorator,
+)
+
+# 判断数据存储位置是否存在
 if not os.path.exists(config.data_path):
     os.makedirs(config.data_path)
 
@@ -62,6 +68,8 @@ async def load_subscriptions() -> List[Subscription]:
     except Exception:
         return []
 
+
+@add_sub_async_decorator
 async def add_subscription(subscription: Subscription):
     """
     添加订阅
@@ -70,58 +78,30 @@ async def add_subscription(subscription: Subscription):
     subscriptions.append(subscription)
     await save_subscriptions(subscriptions)
 
-async def save_adatas(adatas: List[AData], subscription: Subscription):
-    """
-    保存数据, 暂时存json
-    """
-    # 读取数据
-    old_adatas = await load_adatas(subscription)
-    # 合并数据
-    old_adatas.extend(adatas)
-    # 去重复
-    old_adatas = list({adata.id: adata for adata in old_adatas}.values())
 
-    async with aiofiles.open(
-        f"{config.data_path}/{subscription.name}.json", "w", encoding="utf-8"
-    ) as f:
-        # 写入的时候，将对象转换为dict，并将对象类型写入 __type__ 字段
-        json_data = []
-        for adata in old_adatas:
-            adata_dict = adata.__dict__
-            adata_dict["__type__"] = adata.__class__.__name__
-            json_data.append(adata_dict)
-        await f.write(json.dumps(json_data, indent=4, ensure_ascii=False))
+@update_job_async_decorator
+async def update_subscription(
+    old_subscription: Subscription, subscription: Subscription
+):
+    """
+    更新订阅
+    """
+    subscriptions = await load_subscriptions()
+    for index, sub in enumerate(subscriptions):
+        if sub.name == old_subscription.name:
+            subscriptions[index] = subscription
+            break
+    await save_subscriptions(subscriptions)
 
 
-async def load_adatas(subscription: Subscription) -> List[AData]:
+@remove_job_async_decorator
+async def delete_subscription(subscription: Subscription):
     """
-    读取数据
+    删除订阅
     """
-    result = []
-    try:
-        async with aiofiles.open(
-            f"{config.data_path}/{subscription.name}.json", "r", encoding="utf-8"
-        ) as f:
-            adatas = json.loads(await f.read())
-            for adata in adatas:
-                adata_class = ADATA_CLASS.get(adata.get("__type__", None), AData)
-                if adata_class:
-                    result.append(adata_class(**adata))
-            return result
-    except Exception:
-        return result
-
-
-async def check_adatas(adatas: List[AData], subscription: Subscription) -> List[AData]:
-    """
-    检查数据是否重复
-    """
-    # 读取数据
-    old_adatas = await load_adatas(subscription)
-    old_id_set = set([old_adata.id for old_adata in old_adatas])
-    # 去重复
-    new_adatas = []
-    for adata in adatas:
-        if adata.id not in old_id_set:
-            new_adatas.append(adata)
-    return new_adatas
+    subscriptions = await load_subscriptions()
+    for index, sub in enumerate(subscriptions):
+        if sub.name == subscription.name:
+            subscriptions.pop(index)
+            break
+    await save_subscriptions(subscriptions)

@@ -15,9 +15,7 @@ from bot.lib import (
     InputText,
 )
 from bot.utils import subscription_telegram_message_text
-from spider import match_spider
-from subscription import load_subscription
-from utils import create_trigger
+from database import load_subscriptions
 
 
 async def query_list(
@@ -28,7 +26,7 @@ async def query_list(
     """
     查询列表
     """
-    subs = await load_subscription()
+    subs = await load_subscriptions()
     if not subs:
         await event.reply("没有订阅, 快去添加吧!")
         return

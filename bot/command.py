@@ -2,11 +2,14 @@ import asyncio
 from loguru import logger
 from telethon import TelegramClient, events, sync, Button
 from bot import bot
+from bot.change import change_list
+from bot.delete import delete_handle
 from bot.inputs import (
     choose_actions,
     choose_spider,
     cron_input,
     subscription_name_input,
+    url_input,
 )
 from bot.lib import CancelInput, CommandInfo, InputText, buttons_layout
 from bot.permission import handle_permission
@@ -21,8 +24,7 @@ class StratCommands:
     subscribe = CommandInfo(name="订阅", command="subscribe", description="订阅")
     change = CommandInfo(name="修改", command="change", description="修改订阅")
     query = CommandInfo(name="查询", command="query", description="查询订阅")
-    unsubscribe = CommandInfo(name="取消订阅", command="unsubscribe", description="取消订阅")
-    help = CommandInfo(name="帮助", command="help", description="帮助")
+    unsubscribe = CommandInfo(name="删除订阅", command="unsubscribe", description="删除订阅")
 
 
 @bot.on(events.NewMessage(pattern="/start", from_users=config.telegram_admin_ids))  # type: ignore
@@ -44,7 +46,7 @@ async def subscribe(event: events.CallbackQuery.Event) -> None:
     try:
 
         sub_name = await subscription_name_input(bot, event, "名称")
-        sub_url = await InputText(bot, event, "URL").input()
+        sub_url = await url_input(bot, event, "输入 URL 地址", "https://")
         sub_cron = await cron_input(bot, event)
 
         spider_name = await choose_spider(bot, event, "选择抓取方式", sub_url)
@@ -74,7 +76,16 @@ async def subscribe(event: events.CallbackQuery.Event) -> None:
 
 @bot.on(events.CallbackQuery(data=StratCommands.change.command, func=lambda e: handle_permission(e)))  # type: ignore
 async def change(event: events.CallbackQuery.Event) -> None:
-    pass
+    """
+    修改订阅
+    """
+    await event.delete()
+    try:
+        await change_list(bot, event)
+    except asyncio.TimeoutError:
+        pass
+    except CancelInput:
+        pass
 
 
 @bot.on(events.CallbackQuery(data=StratCommands.query.command, func=lambda e: handle_permission(e)))  # type: ignore
@@ -85,6 +96,20 @@ async def query(event: events.CallbackQuery.Event) -> None:
     await event.delete()
     try:
         await query_list(bot, event)
+    except asyncio.TimeoutError:
+        pass
+    except CancelInput:
+        pass
+
+
+@bot.on(events.CallbackQuery(data=StratCommands.unsubscribe.command, func=lambda e: handle_permission(e)))  # type: ignore
+async def unsubscribe(event: events.CallbackQuery.Event) -> None:
+    """
+    删除订阅
+    """
+    await event.delete()
+    try:
+        await delete_handle(bot, event)
     except asyncio.TimeoutError:
         pass
     except CancelInput:
