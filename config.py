@@ -1,17 +1,12 @@
 import sys
-from pydantic import BaseSettings
 from typing import Optional, List
 from loguru import logger
+from pydantic_settings import SettingsConfigDict, BaseSettings
 
 
 class EnvConfig(BaseSettings):
     env: str = "dev"
-
-    class Config:
-        # 设置需要识别的 .env 文件 判断当前环境
-        env_file = ".env"
-        # 设置字符编码
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
 env_config = EnvConfig()
@@ -40,16 +35,13 @@ class Config(BaseSettings):
     web_host: str = "0.0.0.0"
     web_port: int = 8080
 
-    telegram_api_id: Optional[str] = None
+    telegram_api_id: Optional[int] = None
     telegram_api_hash: Optional[str] = None
     telegram_bot_token: Optional[str] = None
     telegram_admin_ids: Optional[List[int]] = None
-
-    class Config:
-        # 设置需要识别的 .env 文件 判断当前环境
-        env_file = f".env.{env_config.env}"
-        # 设置字符编码
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=f".env.{env_config.env}", env_file_encoding="utf-8", extra="allow"
+    )
 
 
 config = Config()

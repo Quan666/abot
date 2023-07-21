@@ -1,7 +1,9 @@
 import asyncio
 from typing import List, Optional
+
+from pydantic_settings import SettingsConfigDict
 from bot.lib import InputListInt
-from config import ConfigEnv
+from config import ConfigEnv, env_config
 from loguru import logger
 from bot import get_bot
 from models import AData, Subscription
@@ -24,9 +26,12 @@ class TelegramActionStaticConfig(BaseActionStaticConfig):
     静态配置
     """
 
-    class Config(ConfigEnv):
-        # 解析的前缀
-        env_prefix = "TELEGRAM_ACTION_"
+    model_config = SettingsConfigDict(
+        env_file=f".env.{env_config.env}",
+        env_file_encoding="utf-8",
+        env_prefix="TELEGRAM_ACTION_",
+        extra="allow",
+    )
 
 
 class TelegramActionDynamicConfig(BaseActionDynamicConfig):

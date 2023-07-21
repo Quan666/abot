@@ -156,3 +156,4 @@ bot.session-journal
 logs/
 actions.json
 dev.txt
+log.txt

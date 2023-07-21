@@ -5,12 +5,13 @@
 """
 
 from typing import List, Optional
-from pydantic import BaseModel, BaseSettings
+from pydantic import BaseModel
 from loguru import logger
-from config import ConfigEnv
+from config import ConfigEnv, env_config
 from models import AData, Subscription
 
 from telethon import TelegramClient, events
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 __ACTION_NAME__ = "BaseAction"
@@ -25,11 +26,14 @@ class BaseActionStaticConfig(BaseSettings):
     静态配置
     """
 
-    log_prefix: Optional[str] = "BaseAction: "
+    model_config = SettingsConfigDict(
+        env_file=f".env.{env_config.env}",
+        env_file_encoding="utf-8",
+        env_prefix="BASE_ACTION_",
+        extra="allow",
+    )
 
-    class Config(ConfigEnv):
-        # 解析的前缀
-        env_prefix = "BASE_ACTION_"
+    log_prefix: Optional[str] = "BaseAction: "
 
 
 class BaseActionDynamicConfig(BaseModel):
