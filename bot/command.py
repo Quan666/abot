@@ -27,6 +27,16 @@ class StratCommands:
     unsubscribe = CommandInfo(name="删除订阅", command="unsubscribe", description="删除订阅")
 
 
+@bot.on(events.NewMessage(pattern="/info", from_users=config.telegram_admin_ids))  # type: ignore
+async def start(event: events.NewMessage.Event) -> None:
+    """
+    输出当前对话的相关信息
+    """
+    text = f"chat_id: `{event.chat_id}`\n"
+    text += f"sender_id: `{event.sender_id}`\n"
+    await event.reply(text)
+
+
 @bot.on(events.NewMessage(pattern="/start", from_users=config.telegram_admin_ids))  # type: ignore
 async def start(event: events.NewMessage.Event) -> None:
     btns = []
