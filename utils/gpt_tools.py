@@ -1,4 +1,3 @@
-from difflib import SequenceMatcher
 import json
 from typing import List
 
@@ -54,18 +53,11 @@ if not os.path.exists(config.data_path):
 if not os.path.exists(os.path.join(config.data_path, "cache")):
     os.mkdir(os.path.join(config.data_path, "cache"))
 
-
-async def find_bangumi_name_cache(text: str) -> dict:
+async def read_bangumi_name_cache() -> List[dict]:
     """
-    通过 chatgpt 识别番剧名称, 使用缓存
-    通过 相似度判断是否走缓存
-    缓存格式:
-    {
-        {text}: {gpt_result},
-    }
+    读取缓存 
+    存储在 data/cache/bangumi_name_cache.json
     """
-
-    # 获取缓存 ，存储在 data/cache/bangumi_name_cache.json
     try:
         async with aiofiles.open(
             os.path.join(config.data_path, "cache", "bangumi_name_cache.json"),
@@ -73,24 +65,43 @@ async def find_bangumi_name_cache(text: str) -> dict:
             encoding="utf-8",
         ) as f:
             bangumi_name_cache = await f.read()
-        bangumi_name_cache = json.loads(bangumi_name_cache)
-    except FileNotFoundError:
-        bangumi_name_cache = {}
+        return json.loads(bangumi_name_cache)
+    except Exception as e:
+        return []
+    
+async def write_bangumi_name_cache(bangumi_name_cache: List[dict]) -> None:
+    """
+    写入缓存
+    """
+    async with aiofiles.open(
+        os.path.join(config.data_path, "cache", "bangumi_name_cache.json"),
+        mode="w",
+        encoding="utf-8",
+    ) as f:
+        await f.write(json.dumps(bangumi_name_cache, ensure_ascii=False, indent=4))
 
-    # 遍历缓存，找到最相似的
-    max_similarity = 0.0
-    max_similarity_text = ""
-    for cache_text in bangumi_name_cache.keys():
-        similarity = SequenceMatcher(None, text, cache_text).ratio()
-        if similarity > max_similarity:
-            max_similarity = similarity
-            max_similarity_text = cache_text
 
-    # logger.debug(f"find_bangumi_name_cache max_similarity: {max_similarity}")
+async def find_bangumi_name_cache(text: str) -> dict:
+    """
+    通过 chatgpt 识别番剧名称, 使用缓存
+    通过 相似度判断是否走缓存
+    缓存格式:
+    {
+        "cn": "AI 电子基因",
+        "jp": "AI no Idenshi"
+    }
+    """
 
-    # 如果相似度大于设定值，返回缓存
-    if max_similarity > config.gpt_bangumi_name_similarity:
-        return bangumi_name_cache[max_similarity_text]
+    bangumi_name_cache = await read_bangumi_name_cache()
+
+    # 遍历缓存
+    for cache in bangumi_name_cache:
+        cn = cache.get("cn", "")
+        jp = cache.get("jp", "")
+        if not cn and not jp:
+            continue
+        if cn in text or jp in text:
+            return cache
 
     # 如果相似度小于设定值，请求 chatgpt
     try:
@@ -98,13 +109,9 @@ async def find_bangumi_name_cache(text: str) -> dict:
         if not gpt_result["cn"] and not gpt_result["jp"]:
             return {"cn": None, "jp": None}
         # 存储到缓存
-        async with aiofiles.open(
-            os.path.join(config.data_path, "cache", "bangumi_name_cache.json"),
-            mode="w",
-            encoding="utf-8",
-        ) as f:
-            bangumi_name_cache[text] = gpt_result
-            await f.write(json.dumps(bangumi_name_cache, ensure_ascii=False, indent=4))
+        bangumi_name_cache = await read_bangumi_name_cache()
+        bangumi_name_cache.append(gpt_result)
+        await write_bangumi_name_cache(bangumi_name_cache)
         return gpt_result
     except Exception as e:
         logger.error(f"find_bangumi_name_cache error: {e}")

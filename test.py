@@ -28,5 +28,5 @@ def find_bangumi_name_test():
 
 
 if __name__ == "__main__":
-    # find_bangumi_name_cache_test()
-    find_bangumi_name_test()
+    find_bangumi_name_cache_test()
+    # find_bangumi_name_test()
