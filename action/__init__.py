@@ -34,5 +34,6 @@ def create_actions(data: List[dict]):
     actions = []
     for d in data:
         action = ACTIONS[d["name"]](**d)
+        action.static_config = action.static_config.__class__()
         actions.append(action)
     return actions

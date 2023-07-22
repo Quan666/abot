@@ -2,10 +2,9 @@ import re
 import importlib
 import pkgutil
 import spider.routes
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from models import Subscription
-from spider.routes.base import BaseSpider
 from loguru import logger
 
 from action import ACTIONS_FUN_LIST
@@ -26,13 +25,6 @@ def register_spider(spider_cls):
     SPIDES.append(spider_cls)
 
 
-def get_spider(subscription: Subscription) -> Optional[BaseSpider]:
-    for spider in SPIDES:
-        if subscription.spider_name == spider.name:
-            return spider
-    return None
-
-
 def get_spider_support_actions_by_name(name: str) -> List[str]:
     for spider in SPIDES:
         if name == spider.name:
@@ -41,12 +33,16 @@ def get_spider_support_actions_by_name(name: str) -> List[str]:
 
 
 # 匹配的spider
-def match_spider(url: str) -> Optional[List[BaseSpider]]:
+def match_spider(url: str) -> Optional[List[Any]]:
     result = []
     for spider in SPIDES:
         if re.search(spider.url_pattern, url):
             result.append(spider)
     return result
+
+
+def get_all_spider() -> List[Any]:
+    return SPIDES
 
 
 # 扫描 routes下所有模块，Spider结尾的类都会被注册
@@ -86,6 +82,17 @@ def load_spider(path, parent_name):
                     if set(action_func_list).issubset(set(func_list)):
                         support_actions.append(action_name)
                 register_spider(spider(support_actions=support_actions))
+
+
+def create_spider(data: dict):
+    """
+    根据json配置, 创建 spider 实例
+    """
+    for spider in SPIDES:
+        if data["name"] == spider.name:
+            spider_data = spider.__class__(**data)
+            spider_data.static_config = spider.static_config.__class__()
+            return spider_data
 
 
 load_spider(spider.routes.__path__, "spider.routes")

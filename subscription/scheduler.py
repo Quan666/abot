@@ -9,7 +9,6 @@ from typing import List, Optional
 
 from loguru import logger
 from models import Subscription
-from spider import get_spider
 from config import config
 from subscription.check import check_subscription
 from utils import create_trigger
@@ -25,10 +24,7 @@ def add_job(subscription: Subscription):
     """
     添加任务
     """
-    spider = get_spider(subscription)
-    if spider is None:
-        logger.error(f"未找到对应的Spider: {subscription.spider_name}")
-        return
+
     # 通过 cron 表达式添加任务
     trigger = create_trigger(subscription.cron)
     if trigger is None:
@@ -37,7 +33,7 @@ def add_job(subscription: Subscription):
     scheduler.add_job(
         check_subscription,
         trigger=trigger,
-        args=(subscription, spider),
+        args=(subscription,),
         id=subscription.name,
         misfire_grace_time=3,
         next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=1),

@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, Optional, List
 import arrow
 from pydantic import BaseModel
 from models import AData, Subscription
+from models.pikpak import PikPakDownloadInfo
 from spider.routes.base import BaseSpider, BaseSpiderAData
 from utils import convert_size, get_timestamp, timestamp2human
 from utils.gpt_tools import find_bangumi_name_cache
@@ -56,7 +57,7 @@ class MikananiRssSpiderAData(BaseSpiderAData):
             # AI 番剧名称
             cn = self.bangumi_name_cn if self.bangumi_name_cn else "未知"
             jp = self.bangumi_name_jp if self.bangumi_name_jp else "未知"
-            text += f"AI 识别:\n<code>{cn}</code> \ <code>{jp}</code>\n\n"
+            text += f"AI 识别:\n<code>{cn}</code> - <code>{jp}</code>\n\n"
         # 磁力链接
         if self.magnet_url:
             text += f"<code>{self.magnet_url}</code>\n"
@@ -77,6 +78,17 @@ class MikananiRssSpiderAData(BaseSpiderAData):
         return {
             "parse_mode": "html",
         }
+
+    async def pikpak_download(self) -> PikPakDownloadInfo:
+        """
+        pikpak 离线下载
+        """
+        # 保存位置 /订阅名称/当前月份/cn or jp or 未知/
+        path = f"/{arrow.now().format('YYYY-MM')}/{self.bangumi_name_cn or self.bangumi_name_jp or '未知'}"
+        return PikPakDownloadInfo(
+            save_path=path,
+            file_url=self.magnet_url,
+        )
 
 
 class MikananiRssSpider(BaseSpider):

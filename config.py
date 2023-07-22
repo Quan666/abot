@@ -30,7 +30,7 @@ class Config(BaseSettings):
     """
     数据存储位置
     """
-    
+
     log_path: str = "logs"
     """
     日志存储位置
@@ -58,10 +58,6 @@ class Config(BaseSettings):
     """
     gpt_model: str = "gpt-3.5-turbo"
     gpt_host: str = "api.openai.com"
-    gpt_bangumi_name_similarity: float = 0.9
-    """
-    通过 chatgpt 识别番剧名称, 本地缓存相似度
-    """
 
 
 config = Config()

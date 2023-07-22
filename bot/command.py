@@ -14,8 +14,9 @@ from bot.inputs import (
 from bot.lib import CancelInput, CommandInfo, InputText, buttons_layout
 from bot.permission import handle_permission
 from bot.query import query_list
+from bot.utils import subscription_telegram_message_text
 from config import config
-from database import add_subscription
+from database import add_subscription, load_subscriptions
 from models import Subscription
 from spider import get_spider_support_actions_by_name
 
@@ -54,33 +55,34 @@ async def start(event: events.NewMessage.Event) -> None:
 async def subscribe(event: events.CallbackQuery.Event) -> None:
     await event.delete()
     try:
-
-        sub_name = await subscription_name_input(bot, event, "名称")
-        sub_url = await url_input(bot, event, "输入 URL 地址", "https://")
+        sub_names = [sub.name for sub in await load_subscriptions()]
+        sub_name = await subscription_name_input(bot, event, "名称", sub_names)
         sub_cron = await cron_input(bot, event)
 
-        spider_name = await choose_spider(bot, event, "选择抓取方式", sub_url)
+        spider = await choose_spider(bot, event, "选择 Spider")
 
         # actions 选择
         actions = await choose_actions(
-            bot, event, "选择 Action", get_spider_support_actions_by_name(spider_name)
+            bot, event, "选择 Action", get_spider_support_actions_by_name(spider.name)
         )
         sub = Subscription(
             name=sub_name,
-            url=sub_url,
             cron=sub_cron,
-            spider_name=spider_name,
+            spider=spider,
             actions=actions,
             enable=True,
         )
         await add_subscription(sub)
-        await event.reply("添加成功")
+        await event.reply(f"添加成功\n{await subscription_telegram_message_text(sub)}")
 
     except asyncio.TimeoutError:
         pass
     except CancelInput as e:
         pass
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         logger.error(e)
 
 

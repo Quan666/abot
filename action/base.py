@@ -55,7 +55,7 @@ class BaseActionDynamicConfig(BaseModel):
         """
         Telegram 配置展示文本, 继承此类 可以选择
         """
-        tmp = "\n".join([f"  - {k}: {v}" for k, v in self.dict().items()])
+        tmp = "\n".join([f"  - {k}: {v}" for k, v in self.model_dump().items()])
         return f"{tmp if tmp.strip() else '  无'}"
 
 

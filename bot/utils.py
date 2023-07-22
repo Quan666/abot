@@ -1,5 +1,4 @@
 from models import Subscription
-from spider import get_spider
 
 
 async def subscription_telegram_message_text(subscription: Subscription) -> str:
@@ -10,11 +9,12 @@ async def subscription_telegram_message_text(subscription: Subscription) -> str:
     text = (
         f"Sub: `{subscription.name}`{' - *已停止*' if not subscription.enable else ''}\n"
     )
-    text += f"URL: {subscription.url}\n"
     text += f"Cron: `{subscription.cron}`\n"
     text += f"Proxy: {'开启' if subscription.enable_proxy else '关闭'}\n"
-    spider = get_spider(subscription)
-    text += f"Spider: { spider.description if spider else '无'}\n"
+    text += (
+        f"Spider: { subscription.spider.description if subscription.spider else '无'}\n"
+    )
+    text += f"{await subscription.spider.dynamic_config.telegram_text()}\n\n"
     text += f"Actions:\n"
     for action in subscription.actions:
         action_text = f"{action.description} - {action.name}\n"

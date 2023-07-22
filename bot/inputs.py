@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from telethon import TelegramClient, events
 from action import ACTIONS
 from action.base import BaseAction, BaseActionDynamicConfig
@@ -15,20 +15,21 @@ from bot.lib import (
     InputListStr,
     InputText,
 )
-from database import load_subscriptions
-from spider import match_spider
+from spider import get_all_spider
 from utils import create_trigger
 
 
 async def subscription_name_input(
-    bot: TelegramClient, event: events.CallbackQuery.Event, tips_text: str
+    bot: TelegramClient,
+    event: events.CallbackQuery.Event,
+    tips_text: str,
+    sub_names: List[str] = [],
 ) -> Optional[str]:
     """
     订阅名称输入
     """
     while True:
         name = await InputText(bot, event, tips_text).input()
-        sub_names = [sub.name for sub in await load_subscriptions()]
         if name in sub_names:
             tips_text = f"{tips_text}\n订阅名称已存在, 请重新输入!!!"
         else:
@@ -39,7 +40,7 @@ async def url_input(
     bot: TelegramClient,
     event: events.CallbackQuery.Event,
     tips_text: str,
-    placeholder: str,
+    placeholder: str = "https://",
 ) -> Optional[str]:
     """
     url 输入, 正则匹配是否为 url
@@ -65,10 +66,10 @@ async def cron_input(
     sub_cron = None
     if not cron:
         placeholder = "0 */5 * * * *"
-        tips_text = f"订阅更新 Cron 表达式\n如: `{placeholder}`\n表示每5分钟更新一次"
+        tips_text = f"订阅执行 Cron 表达式\n如: `{placeholder}`\n表示每5分钟执行一次"
     else:
         placeholder = cron
-        tips_text = f"订阅更新 Cron 表达式\n当前: `{cron}`"
+        tips_text = f"订阅执行 Cron 表达式\n当前: `{cron}`"
     while True:
         if sub_cron is None:
             sub_cron = await InputText(bot, event, tips_text).input(
@@ -196,21 +197,50 @@ async def choose_actions(
     return actions_select
 
 
+async def spider_config_input(
+    bot: TelegramClient,
+    event: events.CallbackQuery.Event,
+    spider,
+) -> Any:
+    """
+    根据 spider 的 config 类含有哪些字段、以及字段类型判断输入方式
+    """
+    config = spider.dynamic_config
+    await config.telegram_setting(bot=bot, event=event)
+    return config
+
+
 async def choose_spider(
-    bot: TelegramClient, event: events.CallbackQuery.Event, tips_text: str, url: str
-) -> str:
+    bot: TelegramClient,
+    event: events.CallbackQuery.Event,
+    tips_text: str,
+    old_spider=None,
+) -> Any:
     """
     选择 Spider, 单选
     """
     btns = []
-    spiders = match_spider(url)
-
+    spiders = get_all_spider()
+    text = ""
+    if old_spider:
+        btns.append(InputButton(old_spider.description, old_spider.name))
+        text = f"当前 Spider: {old_spider.description}\n可以点击对应方式修改配置或切换其它方式"
     for spider in spiders:
+        if old_spider and spider.name == old_spider.name:
+            continue
         btns.append(InputButton(spider.description, spider.name))
 
     # 取消按钮
     btns.append(InputButtonCancel())
 
-    return await InputBtns(
-        bot, event, f"{tips_text}\nURL: {url}\n匹配到的抓取方式有:", btns
-    ).input()
+    while True:
+        select = await InputBtns(bot, event, f"{tips_text}\n{text}", btns).input()
+        if select:
+            for spider in spiders:
+                if spider.name == select:
+                    spider_ = spider
+                    if old_spider and spider.name == old_spider.name:
+                        spider_ = old_spider
+                    config = await spider_config_input(bot, event, spider_)
+                    spider_.dynamic_config = config
+                    return spider_

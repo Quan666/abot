@@ -4,10 +4,14 @@ Spider 部分
 from typing import Callable, Optional, List
 import arrow
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from telethon import TelegramClient, events
+from bot.inputs import url_input
+from database.adata import check_adatas, save_adatas
 from models import AData, Subscription
 from utils import get_timestamp, timestamp2human
 from utils.request import get, Response
-from config import config
+from config import config, env_config
 from loguru import logger
 
 
@@ -33,6 +37,51 @@ class BaseSpiderAData(AData):
         return {
             "parse_mode": "html",
         }
+
+
+class BaseSpiderStaticConfig(BaseSettings):
+    """
+    静态配置
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=f".env.{env_config.env}",
+        env_file_encoding="utf-8",
+        env_prefix="BASE_ACTION_",
+        extra="allow",
+    )
+
+
+class BaseSpiderDynamicConfig(BaseModel):
+    """
+    动态配置
+    """
+
+    url: Optional[str] = None
+    """
+    url
+    """
+
+    async def telegram_setting(
+        self,
+        bot: TelegramClient,
+        event: events.CallbackQuery.Event,
+    ) -> None:
+        """
+        动态配置, Telegram 交互设置, 继承此类需要重写
+        """
+        text = ""
+        if self.url:
+            text += f"当前URL: `{self.url}`\n"
+        text += "输入URL: "
+        self.url = await url_input(bot, event, text)
+
+    async def telegram_text(self):
+        """
+        Telegram 配置展示文本, 继承此类 可以选择
+        """
+        tmp = "\n".join([f"  - {k}: {v}" for k, v in self.model_dump().items()])
+        return f"{tmp if tmp.strip() else '  无'}"
 
 
 class BaseSpider(BaseModel):
@@ -65,6 +114,16 @@ class BaseSpider(BaseModel):
     支持的Acton, 如果支持对应Acton, 必须实现对应的方法
     """
 
+    static_config: Optional[BaseSpiderStaticConfig] = BaseSpiderStaticConfig()
+    """
+    静态配置
+    """
+
+    dynamic_config: Optional[BaseSpiderDynamicConfig] = BaseSpiderDynamicConfig()
+    """
+    动态配置
+    """
+
     def get_only_id(self, id) -> Optional[str]:
         """
         获取唯一id,带前缀
@@ -80,7 +139,7 @@ class BaseSpider(BaseModel):
         if subscription.enable_proxy:
             proxy = config.proxy
         try:
-            return await get(subscription.url, proxy=proxy)
+            return await get(subscription.spider.dynamic_config.url, proxy=proxy)
         except Exception as e:
             logger.error(f"Spider {self.name} request error: {e}")
             return None
@@ -96,7 +155,7 @@ class BaseSpider(BaseModel):
                 id=self.get_only_id(get_timestamp()),
                 title=subscription.name,
                 content=f"{response.content[:100]}...",
-                url=subscription.url,
+                url=subscription.spider.dynamic_config.url,
                 source=subscription.name,
                 push_time=get_timestamp(),
                 extend={},
@@ -111,7 +170,13 @@ class BaseSpider(BaseModel):
         """
         response = await self.request(subscription)
         if response:
-            return await self.parse(subscription, response)
+            adatas = await self.parse(subscription, response)
+            if adatas:
+                new_adatas = await self.filter(adatas, subscription)
+                new_adatas = await self.handle_new_adata(new_adatas, subscription)
+                if new_adatas:
+                    await save_adatas(new_adatas, subscription)
+                return new_adatas
         else:
             return None
 
@@ -121,7 +186,7 @@ class BaseSpider(BaseModel):
         """
         过滤数据
         """
-        return adatas
+        return await check_adatas(adatas, subscription)
 
     async def handle_new_adata(
         self, adatas: List[BaseSpiderAData], subscription: Subscription

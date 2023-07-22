@@ -58,19 +58,14 @@ class Subscription(BaseModel):
     订阅名称
     """
 
-    url: str
-    """
-    订阅链接
-    """
-
     cron: str
     """
     订阅更新时间
     """
 
-    spider_name: str
+    spider: Any
     """
-    Spider 名称
+    Spider
     """
 
     actions: List[Any]

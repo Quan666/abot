@@ -24,8 +24,7 @@ from bot.lib import (
 from bot.utils import subscription_telegram_message_text
 from database import load_subscriptions, update_subscription
 from models import Subscription
-from spider import get_spider_support_actions_by_name, match_spider
-from utils import create_trigger
+from spider import get_spider_support_actions_by_name
 
 
 async def change_filed(
@@ -41,9 +40,8 @@ async def change_filed(
     while True:
         btns = [
             InputButton("名称", data="name"),
-            InputButton("URL", data="url"),
             InputButton("Cron 表达式", data="cron"),
-            InputButton("抓取方式", data="spider_name"),
+            InputButton("Spider", data="spider"),
             InputButton("Actions", data="actions"),
             InputButton("停止", data="enable")
             if sub.enable
@@ -66,18 +64,16 @@ async def change_filed(
         try:
             if btn == "name":
                 sub.name = await subscription_name_input(bot, event, "名称")
-            elif btn == "url":
-                sub.url = await url_input(bot, event, "输入 URL 地址", sub.url)
             elif btn == "cron":
                 sub.cron = await cron_input(bot, event, sub.cron)
-            elif btn == "spider_name":
-                sub.spider_name = await choose_spider(bot, event, "选择抓取方式", sub.url)
+            elif btn == "spider":
+                sub.spider = await choose_spider(bot, event, "", sub.spider)
             elif btn == "actions":
                 sub.actions = await choose_actions(
                     bot,
                     event,
                     "选择 Action",
-                    support_actions=get_spider_support_actions_by_name(sub.spider_name),
+                    support_actions=get_spider_support_actions_by_name(sub.spider.name),
                     actions_select=sub.actions,
                 )
             elif btn == "enable":

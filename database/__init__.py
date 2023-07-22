@@ -13,6 +13,7 @@ import aiofiles
 
 
 import os
+from spider import create_spider
 
 
 from subscription.scheduler import (
@@ -39,10 +40,18 @@ async def save_subscriptions(subscriptions: List[Subscription]):
     async with aiofiles.open(
         f"{subscription_path}/config.json", "w", encoding="utf-8"
     ) as f:
+        datas = []
+        for subscription in subscriptions:
+            # 将对象转换为 json
+            data = subscription.model_dump()
+            # 去掉 spider 和 actions 的 static_config 字段
+            del data["spider"]["static_config"]
+            for action in data["actions"]:
+                del action["static_config"]
+            datas.append(data)
         await f.write(
             json.dumps(
-                subscriptions,
-                default=lambda obj: obj.__dict__,
+                datas,
                 indent=4,
                 ensure_ascii=False,
             )
@@ -60,9 +69,11 @@ async def load_subscriptions() -> List[Subscription]:
         ) as f:
             subscriptions = json.loads(await f.read())
             for subscription in subscriptions:
+                subscription["spider"] = create_spider(subscription["spider"])
                 subscription["actions"] = create_actions(
                     subscription.get("actions", [])
                 )
+
                 result.append(Subscription(**subscription))
             return result
     except Exception:
