@@ -79,9 +79,12 @@ async def wait_msg_callback(
                 done, pending = await asyncio.wait(
                     wait_event, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
                 )
-                for task in pending:
-                    task.cancel()
-                e = done.pop().result()
+                try:
+                    for task in pending:
+                        task.cancel()
+                    e = done.pop().result()
+                except Exception as e:
+                    raise asyncio.TimeoutError
                 if (
                     isinstance(e, events.CallbackQuery.Event)
                     and e.data.decode() == CANCEL
@@ -92,6 +95,7 @@ async def wait_msg_callback(
                     raise CancelInput
                 if e.sender_id == event.sender_id:
                     return e
+                
         finally:
             await cancel_btn.delete()
             if remove_text:

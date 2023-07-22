@@ -45,3 +45,16 @@ def convert_size(size_bytes: int) -> str:
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return f"{s} {size_name[i]}"
+
+
+def get_quarter(timestamp: int) -> str:
+    """
+    根据时间戳获取季度 格式： YYYY-MM
+    只用 1、4、7、10 月份
+    """
+    arrow_time = arrow.get(timestamp)
+    quarter = (arrow_time.month - 1) // 3 + 1
+    # 获取当前季度的第一个月
+    first_month = (quarter - 1) * 3 + 1
+    # 月份前面补0
+    return f"{arrow_time.year}-{str(first_month).zfill(2)}"

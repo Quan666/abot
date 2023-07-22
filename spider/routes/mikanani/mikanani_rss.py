@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from models import AData, Subscription
 from models.pikpak import PikPakDownloadInfo
 from spider.routes.base import BaseSpider, BaseSpiderAData
-from utils import convert_size, get_timestamp, timestamp2human
+from utils import convert_size, get_quarter, get_timestamp, timestamp2human
 from utils.gpt_tools import find_bangumi_name_cache
 from utils.request import Response
 import feedparser
@@ -84,7 +84,7 @@ class MikananiRssSpiderAData(BaseSpiderAData):
         pikpak 离线下载
         """
         # 保存位置 /订阅名称/当前月份/cn or jp or 未知/
-        path = f"/{arrow.now().format('YYYY-MM')}/{self.bangumi_name_cn or self.bangumi_name_jp or '未知'}"
+        path = f"/{get_quarter(self.push_time)}/{self.bangumi_name_cn or self.bangumi_name_jp or '未知'}"
         return PikPakDownloadInfo(
             save_path=path,
             file_url=self.magnet_url,
