@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from models import AData, Subscription
 from spider.routes.base import BaseSpider, BaseSpiderAData
 from utils import convert_size, get_timestamp, timestamp2human
+from utils.gpt_tools import find_bangumi_name_cache
 from utils.request import Response
 import feedparser
 from email.utils import parsedate_to_datetime
@@ -31,6 +32,15 @@ class MikananiRssSpiderAData(BaseSpiderAData):
     """
     magnet_url: Optional[str] = None
 
+    bangumi_name_cn: Optional[str] = None
+    """
+    番剧中文名
+    """
+    bangumi_name_jp: Optional[str] = None
+    """
+    番剧日文名
+    """
+
     async def get_telegram_message_text(self) -> str:
         """
         TelegramAction 的方法
@@ -42,7 +52,11 @@ class MikananiRssSpiderAData(BaseSpiderAData):
         if similarity.ratio() <= 0.6:
             text += f"<b>{self.title}</b>\n"
         text += f"{self.content}\n\n"
-
+        if config.gpt_api_key:
+            # AI 番剧名称
+            cn = self.bangumi_name_cn if self.bangumi_name_cn else "未知"
+            jp = self.bangumi_name_jp if self.bangumi_name_jp else "未知"
+            text += f"AI 识别:\n<code>{cn}</code> \ <code>{jp}</code>\n\n"
         # 磁力链接
         if self.magnet_url:
             text += f"<code>{self.magnet_url}</code>\n"
@@ -114,8 +128,22 @@ class MikananiRssSpider(BaseSpider):
                     torrent_url=torrent_url,
                     magnet_url=torrent_url2magnet_url(torrent_url),
                 )
+
                 result.append(adata)
         return result
+
+    async def handle_new_adata(
+        self, adatas: List[MikananiRssSpiderAData], subscription: Subscription
+    ) -> List[MikananiRssSpiderAData]:
+        """
+        处理数据
+        """
+        if config.gpt_api_key:
+            for adata in adatas:
+                bangumi = await find_bangumi_name_cache(adata.title)
+                adata.bangumi_name_cn = bangumi.get("cn", None)
+                adata.bangumi_name_jp = bangumi.get("jp", None)
+        return adatas
 
 
 def get_torrent_url(entry: Dict[str, Any]) -> Optional[str]:

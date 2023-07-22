@@ -114,3 +114,19 @@ class BaseSpider(BaseModel):
             return await self.parse(subscription, response)
         else:
             return None
+
+    async def filter(
+        self, adatas: List[AData], subscription: Subscription
+    ) -> List[AData]:
+        """
+        过滤数据
+        """
+        return adatas
+
+    async def handle_new_adata(
+        self, adatas: List[BaseSpiderAData], subscription: Subscription
+    ) -> List[BaseSpiderAData]:
+        """
+        处理数据
+        """
+        return adatas

@@ -17,6 +17,9 @@ class TwitterSpiderAData(BaseSpiderAData):
     TwitterSpider 数据模型
     """
 
+    pic_url: Optional[List[str]] = []
+
+
     async def get_telegram_message_text(self) -> str:
         """
         TelegramAction 的方法
@@ -75,6 +78,12 @@ class TwitterSpider(BaseSpider):
         d = json.loads(response.content)
         if items := d.get("data"):
             for item in items:
+                pic_url = []
+                if media:=item.get("entities", {}).get("media",[]):
+                    for m in media:
+                        if m.get("type") == "photo" and m.get("media_url_https"):
+                            pic_url.append(m.get("media_url_https"))
+
                 adata = TwitterSpiderAData(
                     id=self.get_only_id(item.get("id")),
                     title=item.get("text"),
@@ -85,6 +94,7 @@ class TwitterSpider(BaseSpider):
                         arrow.get(item.get("created_at")).float_timestamp * 1000
                     ),
                     extend=item,
+                    pic_url=pic_url,
                 )
                 result.append(adata)
         return result

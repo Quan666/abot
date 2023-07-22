@@ -21,16 +21,25 @@ class ConfigEnv:
 
 class Config(BaseSettings):
 
-    # 日志等级
     log_level: str = "INFO"
+    """
+    日志等级
+    """
 
-    # 数据存储位置
     data_path: str = "data"
-    # 日志存储位置
+    """
+    数据存储位置
+    """
+    
     log_path: str = "logs"
+    """
+    日志存储位置
+    """
 
-    # 代理
     proxy: Optional[str] = None
+    """
+    代理
+    """
 
     web_host: str = "0.0.0.0"
     web_port: int = 8080
@@ -42,6 +51,17 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=f".env.{env_config.env}", env_file_encoding="utf-8", extra="allow"
     )
+
+    gpt_api_key: Optional[str] = None
+    """
+    chatgpt api key
+    """
+    gpt_model: str = "gpt-3.5-turbo"
+    gpt_host: str = "api.openai.com"
+    gpt_bangumi_name_similarity: float = 0.9
+    """
+    通过 chatgpt 识别番剧名称, 本地缓存相似度
+    """
 
 
 config = Config()

@@ -1,8 +1,9 @@
 import httpx
 from models import Response
+from typing import Optional
 
 
-def proxy2httpx(proxy: str) -> dict:
+def proxy2httpx(proxy: Optional[str]) -> dict:
     """
     代理转换为 httpx 格式
     """

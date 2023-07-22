@@ -16,12 +16,19 @@ async def check_subscription(subscription: Subscription, spider: BaseSpider):
     """
     logger.info(f"检查订阅: {subscription.name}")
     adatas = await spider.start(subscription)
-    new_adatas = []
-    if adatas:
-        # todo: 保存数据、去重复
-        new_adatas = await check_adatas(adatas, subscription)
+    if not adatas:
+        return
+    # 过滤数据
+    adatas = await spider.filter(adatas, subscription)
+    if not adatas:
+        return
+    # 检查数据是否重复
+    new_adatas = await check_adatas(adatas, subscription)
+    if not new_adatas:
+        return
+    # 处理数据
+    new_adatas = await spider.handle_new_adata(new_adatas, subscription)
     if new_adatas:
-
         tasks = []
         for action in subscription.actions:
             if action.name in spider.support_actions:
