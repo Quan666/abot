@@ -176,9 +176,7 @@ def torrent_url2magnet_url(url: Optional[str]) -> Optional[str]:
 
 def get_item_date(item: Dict[str, Any]) -> arrow.Arrow:
     if date := item.get("published"):
-        with suppress(Exception):
-            date = parsedate_to_datetime(date)
-        return arrow.get(date)
+        return arrow.get(date).shift(hours=-8)
     return arrow.now()
 
 
