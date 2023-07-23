@@ -17,7 +17,7 @@ from telethon import TelegramClient, events
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from config import config
 from models.pikpak import PikPakDownloadInfo
-from utils import convert_size
+from utils import convert_size, get_timestamp
 from utils.cache import read_cache, write_cache
 
 from .base import BaseAction, BaseActionStaticConfig, BaseActionDynamicConfig
@@ -31,7 +31,7 @@ Action 需要支持的方法列表
 PIKPAK_CACHE_KEY = "pikpak_login_info"
 
 PIKPAK_CLIENT: Optional[PikPakApi] = None
-
+PIKPAK_LAST_REFRESH_TOKEN_TIME: Optional[int] = None
 
 class PikpakActionStaticConfig(BaseActionStaticConfig):
     """
@@ -169,7 +169,18 @@ class PikpakAction(BaseAction):
         """
         global PIKPAK_CLIENT
         if PIKPAK_CLIENT:
-            return PIKPAK_CLIENT
+            # 60 分钟刷新一次 token
+            if PIKPAK_LAST_REFRESH_TOKEN_TIME and (
+                PIKPAK_LAST_REFRESH_TOKEN_TIME + 60 * 60 * 1000
+            ) > get_timestamp():
+                return PIKPAK_CLIENT
+            try:
+                await PIKPAK_CLIENT.refresh_access_token()
+                PIKPAK_LAST_REFRESH_TOKEN_TIME = get_timestamp()
+                return PIKPAK_CLIENT
+            except Exception as e:
+                logger.debug(f"PikPak refresh token 失败: {e}")
+                
         try:
             PIKPAK_CLIENT = PikPakApi(
                 username=self.static_config.username,
