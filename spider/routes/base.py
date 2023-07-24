@@ -1,6 +1,7 @@
 """
 Spider 部分
 """
+import re
 from typing import Callable, Optional, List
 import arrow
 from pydantic import BaseModel
@@ -174,8 +175,6 @@ class BaseSpider(BaseModel):
             if adatas:
                 new_adatas = await self.filter(adatas, subscription)
                 new_adatas = await self.handle_new_adata(new_adatas, subscription)
-                if new_adatas:
-                    await save_adatas(new_adatas, subscription)
                 return new_adatas
         else:
             return None
@@ -186,7 +185,29 @@ class BaseSpider(BaseModel):
         """
         过滤数据
         """
-        return await check_adatas(adatas, subscription)
+        result = []
+        datas = await check_adatas(adatas, subscription)
+        if datas:
+            await save_adatas(datas, subscription)
+        if subscription.white_keywords:
+            for data in datas:
+                for keyword in subscription.white_keywords:
+                    title = data.title or ""
+                    content = data.content or ""
+                    if re.search(keyword, title) or re.search(keyword, content):
+                        result.append(data)
+        else:
+            result = datas
+
+        if subscription.black_keywords:
+            for data in datas:
+                for keyword in subscription.black_keywords:
+                    title = data.title or ""
+                    content = data.content or ""
+                    if re.search(keyword, title) or re.search(keyword, content):
+                        result.remove(data)
+
+        return result
 
     async def handle_new_adata(
         self, adatas: List[BaseSpiderAData], subscription: Subscription

@@ -67,15 +67,26 @@ async def wait_msg_callback(
         )
         try:
             while True:
+                # wait_event = [
+                #     conv.get_response(timeout=timeout),
+                #     conv.wait_event(
+                #         events.CallbackQuery(
+                #             func=lambda e: e.sender_id == event.sender_id
+                #         ),
+                #         timeout=timeout,
+                #     ),
+                # ]
                 wait_event = [
-                    conv.get_response(timeout=timeout),
-                    conv.wait_event(
+                    asyncio.create_task(conv.get_response(timeout=timeout)),
+                    asyncio.create_task(conv.wait_event(
                         events.CallbackQuery(
                             func=lambda e: e.sender_id == event.sender_id
                         ),
                         timeout=timeout,
-                    ),
+                    ))
+
                 ]
+                        
                 done, pending = await asyncio.wait(
                     wait_event, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
                 )

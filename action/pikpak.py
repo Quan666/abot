@@ -143,6 +143,8 @@ class PikpakAction(BaseAction):
                         f"保存路径: {save_path}\n"
                     )
                 except Exception as e:
+                    if str(e) == "":
+                        e = "请求超时"
                     messages.append(
                         f"<b>{data.title}</b>\n"
                         f"{convert_size(data.content_length)}\n"
@@ -168,6 +170,7 @@ class PikpakAction(BaseAction):
         获取 PikPak 实例, 从缓存中读取 token
         """
         global PIKPAK_CLIENT
+        global PIKPAK_LAST_REFRESH_TOKEN_TIME
         if PIKPAK_CLIENT:
             # 60 分钟刷新一次 token
             if PIKPAK_LAST_REFRESH_TOKEN_TIME and (
@@ -194,6 +197,8 @@ class PikpakAction(BaseAction):
                     await PIKPAK_CLIENT.refresh_access_token()
                     return PIKPAK_CLIENT
                 except Exception as e:
+                    import traceback
+                    traceback.print_exc()
                     logger.debug(f"PikPak refresh token 失败: {e}")
 
             await PIKPAK_CLIENT.login()

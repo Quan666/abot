@@ -66,10 +66,10 @@ async def cron_input(
     sub_cron = None
     if not cron:
         placeholder = "0 */5 * * * *"
-        tips_text = f"订阅执行 Cron 表达式\n如: `{placeholder}`\n表示每5分钟执行一次"
+        tips_text = f"订阅执行 Cron\n如: `{placeholder}`\n表示每5分钟执行一次"
     else:
         placeholder = cron
-        tips_text = f"订阅执行 Cron 表达式\n当前: `{cron}`"
+        tips_text = f"订阅执行 Cron\n当前: `{cron}`"
     while True:
         if sub_cron is None:
             sub_cron = await InputText(bot, event, tips_text).input(
@@ -77,7 +77,7 @@ async def cron_input(
             )
         else:
             sub_cron = await InputText(
-                bot, event, f"Cron 表达式错误, 请重新输入!!!\n{tips_text}"
+                bot, event, f"Cron 格式错误, 请重新输入!!!\n{tips_text}"
             ).input(placeholder=placeholder)
         if create_trigger(sub_cron):
             break

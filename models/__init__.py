@@ -86,6 +86,18 @@ class Subscription(BaseModel):
     是否启用代理
     """
 
+    white_keywords: Optional[List[str]] = []
+    """
+    白名单关键词, 满足其中一个关键词则推送, 为空则不限制
+    支持正则表达式
+    """
+    
+    black_keywords: Optional[List[str]] = []
+    """
+    黑名单关键词, 满足其中一个关键词则不推送, 为空则不限制
+    支持正则表达式
+    """
+
     def to_json(self):
         return self.dict()
 

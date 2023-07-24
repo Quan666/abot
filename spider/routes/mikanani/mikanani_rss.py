@@ -42,6 +42,8 @@ class MikananiRssSpiderAData(BaseSpiderAData):
     番剧日文名
     """
 
+    deflaut_path: Optional[str] = None
+
     async def get_telegram_message_text(self) -> str:
         """
         TelegramAction 的方法
@@ -84,7 +86,7 @@ class MikananiRssSpiderAData(BaseSpiderAData):
         pikpak 离线下载
         """
         # 保存位置 /订阅名称/当前月份/cn or jp or 未知/
-        path = f"/{get_quarter(self.push_time)}/{self.bangumi_name_cn or self.bangumi_name_jp or '未知'}"
+        path = f"/{get_quarter(self.push_time)}/{self.bangumi_name_cn or self.bangumi_name_jp or self.deflaut_path}"
         return PikPakDownloadInfo(
             save_path=path,
             file_url=self.magnet_url,
@@ -155,6 +157,9 @@ class MikananiRssSpider(BaseSpider):
                 bangumi = await find_bangumi_name_cache(adata.title)
                 adata.bangumi_name_cn = bangumi.get("cn", None)
                 adata.bangumi_name_jp = bangumi.get("jp", None)
+        else:
+            for adata in adatas:
+                adata.deflaut_path = subscription.name
         return adatas
 
 

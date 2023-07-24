@@ -40,8 +40,10 @@ async def change_filed(
     while True:
         btns = [
             InputButton("名称", data="name"),
-            InputButton("Cron 表达式", data="cron"),
+            InputButton("Cron", data="cron"),
             InputButton("Spider", data="spider"),
+            InputButton("白名单关键词", data="white_keywords"),
+            InputButton("黑名单关键词", data="black_keywords"),
             InputButton("Actions", data="actions"),
             InputButton("停止", data="enable")
             if sub.enable
@@ -80,6 +82,20 @@ async def change_filed(
                 sub.enable = not sub.enable
             elif btn == "enable_proxy":
                 sub.enable_proxy = not sub.enable_proxy
+            elif btn == "white_keywords":
+                sub.white_keywords = await InputListStr(
+                    bot,
+                    event,
+                    "输入白名单关键词, 为空则不限制\n支持正则表达式, 满足其中一个关键词则推送",
+                    sub.white_keywords,
+                ).input()
+            elif btn == "black_keywords":
+                sub.black_keywords = await InputListStr(
+                    bot,
+                    event,
+                    "输入黑名单关键词, 为空则不限制\n支持正则表达式, 满足其中一个关键词则不推送",
+                    sub.black_keywords,
+                ).input()
 
             elif btn == CONFIRM:
                 await update_subscription(old_sub, sub)

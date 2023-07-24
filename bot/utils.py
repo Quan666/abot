@@ -14,7 +14,22 @@ async def subscription_telegram_message_text(subscription: Subscription) -> str:
     text += (
         f"Spider: { subscription.spider.description if subscription.spider else '无'}\n"
     )
+    
     text += f"{await subscription.spider.dynamic_config.telegram_text()}\n\n"
+    
+    # 白名单关键词
+    if subscription.white_keywords:
+        text += f"白名单关键词:\n"
+        text += "\n".join([f"  - {k}" for k in subscription.white_keywords])
+        text += "\n\n"
+
+
+    # 黑名单关键词
+    if subscription.black_keywords:
+        text += f"黑名单关键词:\n"
+        text += "\n".join([f"  - {k}" for k in subscription.black_keywords])
+        text += "\n\n"
+
     text += f"Actions:\n"
     for action in subscription.actions:
         action_text = f"{action.description} - {action.name}\n"
