@@ -1,16 +1,19 @@
 """
 Spider 部分
 """
+import asyncio
 import re
 from typing import Callable, Optional, List
 import arrow
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from telethon import TelegramClient, events
+from bot import telegram_upload_file
 from bot.inputs import url_input
 from database.adata import check_adatas, save_adatas
 from models import AData, Subscription
-from utils import get_timestamp, timestamp2human
+from utils import get_timestamp,  timestamp2human
+from utils.pic_download import pic_download
 from utils.request import get, Response
 from config import config, env_config
 from loguru import logger
@@ -20,6 +23,20 @@ class BaseSpiderAData(AData):
     """
     Spider 数据模型 基类, 所有 Spider 数据模型都可以继承此类或者直接继承AData
     """
+    pic_url: Optional[List[str]] = []
+
+    pic_bytes: Optional[List[bytes]] = []
+
+    async def download_pic_bytes(self) -> Optional[List[bytes]]:
+        """
+        下载图片
+        """
+        if self.pic_url and len(self.pic_bytes) != len(self.pic_url):
+            tasks = []
+            for url in self.pic_url:
+                tasks.append(pic_download(url, proxy=config.proxy))
+            self.pic_bytes = await asyncio.gather(*tasks)
+        return self.pic_bytes
 
     async def get_telegram_message_text(self) -> str:
         """
@@ -31,13 +48,24 @@ class BaseSpiderAData(AData):
         text += f"<a href='{self.url}'>阅读原文</a>"
         return text
 
-    async def get_telegram_message_config(self) -> str:
+    async def get_telegram_message_config(self) -> dict:
         """
         TelegramAction 的方法, 发送消息时的配置
         """
-        return {
-            "parse_mode": "html",
-        }
+        pics = await self.download_pic_bytes()
+        media = []
+        if pics:
+            media = await telegram_upload_file(pics)
+        # print(media)
+        if media:
+            return {
+                "parse_mode": "html",
+                "file": media,
+            }
+        else:
+            return {
+                "parse_mode": "html",
+            }
 
 
 class BaseSpiderStaticConfig(BaseSettings):

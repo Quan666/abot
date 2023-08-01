@@ -2,7 +2,8 @@
 机器人模块
 """
 
-from typing import Any, Literal, Optional, Tuple
+import asyncio
+from typing import Any, List, Literal, Optional, Tuple
 
 from loguru import logger
 from telethon import TelegramClient
@@ -28,6 +29,17 @@ def get_bot() -> TelegramClient:
     if not bot:
         raise Exception("bot 未初始化")
     return bot
+
+
+async def telegram_upload_file(files: List[bytes]) -> List[Any]:
+    """
+    上传文件，返回文件id
+    """
+    bot = get_bot()
+    tasks = []
+    for file in files:
+        tasks.append(bot.upload_file(file))
+    return await asyncio.gather(*tasks)
 
 
 async def start_telegram_bot(loop: Any, boot_message: str) -> None:

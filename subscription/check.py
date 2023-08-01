@@ -12,7 +12,7 @@ async def check_subscription(subscription: Subscription):
     """
     检查订阅是否更新
     """
-    logger.info(f"检查订阅: {subscription.name}")
+    logger.debug(f"检查订阅: {subscription.name}")
     new_adatas = await subscription.spider.start(subscription)
     if new_adatas:
         tasks = []
