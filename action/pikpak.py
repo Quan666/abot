@@ -153,7 +153,7 @@ class PikpakAction(BaseAction):
                         f"失败: {e}\n"
                     )
         tasks = []
-        messages_str = f"PikPak 离线\n\n" + "\n----------\n".join(messages)
+        messages_str = f"<i>PikPak 离线</i>\n\n" + "\n----------\n".join(messages)
         for chat_id in self.dynamic_config.chat_ids:
 
             tasks.append(

@@ -112,7 +112,7 @@ class Response(BaseModel):
     状态码
     """
 
-    content: str
+    content: Any
     """
     响应内容
     """
