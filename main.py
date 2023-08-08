@@ -1,7 +1,7 @@
 from config import config
-from bot import start_telegram_bot
-from subscription import start_subscription
-from web import start_web
+from src.bot import start_telegram_bot
+from src.subscription import start_subscription
+from src.web import start_web
 import asyncio
 from loguru import logger
 
