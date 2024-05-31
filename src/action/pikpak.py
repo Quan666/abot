@@ -190,7 +190,9 @@ class PikpakAction(BaseAction):
             PIKPAK_CLIENT = PikPakApi(
                 username=self.static_config.username,
                 password=self.static_config.password,
-                proxy=config.proxy,
+                httpx_client_args={
+                    "proxy": f"http://{config.proxy}"
+                },
             )
             refresh_token = await read_cache(PIKPAK_CACHE_KEY)
             if refresh_token:
