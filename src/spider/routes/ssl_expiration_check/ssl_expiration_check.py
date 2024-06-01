@@ -1,6 +1,7 @@
 """
 Spider部分
 """
+
 from typing import Optional, List
 import arrow
 from loguru import logger
@@ -110,9 +111,9 @@ class SSLCheckSpider(BaseSpider):
     唯一id 前缀
     """
 
-    dynamic_config: Optional[
-        SSLCheckSpiderDynamicConfig
-    ] = SSLCheckSpiderDynamicConfig()
+    dynamic_config: Optional[SSLCheckSpiderDynamicConfig] = (
+        SSLCheckSpiderDynamicConfig()
+    )
     """
     动态配置
     """

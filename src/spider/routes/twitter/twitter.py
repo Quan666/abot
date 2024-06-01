@@ -1,6 +1,7 @@
 """
 Spider部分
 """
+
 import json
 from typing import Optional, List
 from src.models import Subscription

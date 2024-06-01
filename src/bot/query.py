@@ -22,7 +22,6 @@ async def query_list(
     bot: TelegramClient,
     event: events.CallbackQuery.Event,
 ):
-
     """
     查询列表
     """

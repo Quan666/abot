@@ -77,9 +77,9 @@ class TelegramAction(BaseAction):
     静态配置
     """
 
-    dynamic_config: Optional[
-        TelegramActionDynamicConfig
-    ] = TelegramActionDynamicConfig()
+    dynamic_config: Optional[TelegramActionDynamicConfig] = (
+        TelegramActionDynamicConfig()
+    )
     """
     动态配置
     """

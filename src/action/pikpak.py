@@ -191,7 +191,7 @@ class PikpakAction(BaseAction):
                 username=self.static_config.username,
                 password=self.static_config.password,
                 httpx_client_args={
-                    "proxy": f"http://{config.proxy}"
+                    "proxy": f"http://{config.proxy}" if config.proxy else None
                 },
             )
             refresh_token = await read_cache(PIKPAK_CACHE_KEY)

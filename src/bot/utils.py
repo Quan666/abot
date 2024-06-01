@@ -6,9 +6,7 @@ async def subscription_telegram_message_text(subscription: Subscription) -> str:
     生成Telegram消息
     """
 
-    text = (
-        f"Sub: `{subscription.name}`{' - *已停止*' if not subscription.enable else ''}\n"
-    )
+    text = f"Sub: `{subscription.name}`{' - *已停止*' if not subscription.enable else ''}\n"
     text += f"Cron: `{subscription.cron}`\n"
     text += f"Proxy: {'开启' if subscription.enable_proxy else '关闭'}\n"
     text += (

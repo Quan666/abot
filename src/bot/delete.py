@@ -22,7 +22,6 @@ async def delete_handle(
     bot: TelegramClient,
     event: events.CallbackQuery.Event,
 ):
-
     """
     删除订阅
     """

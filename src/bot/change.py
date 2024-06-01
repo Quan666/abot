@@ -45,12 +45,16 @@ async def change_filed(
             InputButton("白名单关键词", data="white_keywords"),
             InputButton("黑名单关键词", data="black_keywords"),
             InputButton("Actions", data="actions"),
-            InputButton("停止", data="enable")
-            if sub.enable
-            else InputButton("启用", data="enable"),
-            InputButton("不使用代理", data="enable_proxy")
-            if sub.enable_proxy
-            else InputButton("开启代理", data="enable_proxy"),
+            (
+                InputButton("停止", data="enable")
+                if sub.enable
+                else InputButton("启用", data="enable")
+            ),
+            (
+                InputButton("不使用代理", data="enable_proxy")
+                if sub.enable_proxy
+                else InputButton("开启代理", data="enable_proxy")
+            ),
             InputButtonCancel(),
             InputButtonConfirm(),
         ]
@@ -111,7 +115,6 @@ async def change_list(
     bot: TelegramClient,
     event: events.CallbackQuery.Event,
 ):
-
     """
     查询列表
     """
