@@ -4,7 +4,7 @@ pydantic[dotenv]==2.0.3
 feedparser==6.0.10
 magneturi==1.3
 aiofiles==23.1.0
-httpx==0.24.1
+httpx==0.27.0
 fastapi==0.100.0
 loguru==0.7.0
 pydantic-settings==2.0.2
