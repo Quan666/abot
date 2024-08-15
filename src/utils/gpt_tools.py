@@ -15,7 +15,7 @@ async def request_gpt(messages: List[dict], model=config.gpt_model) -> dict:
         response = await client.post(
             f"https://{config.gpt_host}/v1/chat/completions",
             json={
-                "model": "gpt-3.5-turbo",
+                "model": "gpt-4o-mini",
                 "messages": messages,
             },
             headers={"Authorization": f"Bearer {config.gpt_api_key}"},
